@@ -1,0 +1,342 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Repartiendo con justicia: razones y proporciones para el cui</title>
+<style>
+:root{
+  --bg:#f6f4ee; --paper:#ffffff; --ink:#1d2433; --muted:#5b6475; --line:#d9d4c7;
+  --acc:#1f5fbf; --acc2:#0e8a6a; --warn:#c2410c; --bad:#b42318; --good:#147a3d;
+  --ini:#c2410c; --des:#1f5fbf; --cie:#0e8a6a;
+  --hl:#fff3c4; --code:#f1efe8;
+  --fs: clamp(17px, 1.85vw, 32px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#14171d; --paper:#1d222b; --ink:#e9edf4; --muted:#a3acbb; --line:#323a47;
+    --acc:#6ea8ff; --acc2:#3ccf9f; --warn:#ff9a5c; --bad:#ff7b72; --good:#4ade80;
+    --ini:#ff9a5c; --des:#6ea8ff; --cie:#3ccf9f; --hl:#4a3f12; --code:#262c37;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#14171d; --paper:#1d222b; --ink:#e9edf4; --muted:#a3acbb; --line:#323a47;
+  --acc:#6ea8ff; --acc2:#3ccf9f; --warn:#ff9a5c; --bad:#ff7b72; --good:#4ade80;
+  --ini:#ff9a5c; --des:#6ea8ff; --cie:#3ccf9f; --hl:#4a3f12; --code:#262c37;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);
+  font-family:"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;font-size:var(--fs);line-height:1.35}
+body{overflow:hidden}
+#deck{position:fixed;inset:0 0 54px 0}
+.slide{position:absolute;inset:0;display:none;padding:2.2em 3.2em 1.2em;overflow:auto}
+.slide.active{display:flex;flex-direction:column;animation:fade .25s ease}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.tag{display:inline-flex;gap:.5em;align-items:center;font-size:.72em;font-weight:700;letter-spacing:.06em;
+  text-transform:uppercase;color:#fff;background:var(--des);border-radius:99px;padding:.18em .8em;align-self:flex-start}
+.slide[data-moment="inicio"] .tag{background:var(--ini)}
+.slide[data-moment="cierre"] .tag{background:var(--cie)}
+.slide[data-moment="portada"] .tag{background:var(--muted)}
+h1{font-size:2.1em;line-height:1.1;margin:.35em 0 .3em}
+h2{font-size:1.55em;line-height:1.15;margin:.35em 0 .45em}
+h3{font-size:1.1em;margin:.4em 0 .3em;color:var(--acc)}
+p{margin:.35em 0}
+ul,ol{margin:.3em 0 .3em 1.2em;padding:0}
+li{margin:.22em 0}
+.muted{color:var(--muted)}
+.small{font-size:.8em}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:1.2em;align-items:start}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:1em}
+.g-wide{display:grid;grid-template-columns:1.55fr 1fr;gap:1.2em;flex:1;min-height:0}
+.g-wide>div,.grid2.fill>div{min-height:0;display:flex;flex-direction:column}
+.grid2.fill{flex:1;min-height:0}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:.8em 1em}
+.card.acc{border-left:6px solid var(--acc)}
+.card.warn{border-left:6px solid var(--warn)}
+.card.good{border-left:6px solid var(--good)}
+.big{font-size:1.35em;font-weight:700}
+.formula{font-family:"Cambria Math","STIX Two Math","Times New Roman",serif;font-size:1.3em;background:var(--code);
+  border-radius:10px;padding:.25em .7em;display:inline-block;margin:.2em 0}
+mark{background:var(--hl);color:inherit;padding:0 .15em;border-radius:4px}
+.btn{font:inherit;font-size:.82em;border:1px solid var(--acc);color:var(--acc);background:transparent;border-radius:10px;
+  padding:.35em .85em;cursor:pointer;margin:.2em .3em .2em 0}
+.btn:hover{background:var(--acc);color:#fff}
+.btn.solid{background:var(--acc);color:#fff}
+.hide{display:none!important}
+.ans{border-left:5px solid var(--good);background:color-mix(in srgb,var(--good) 10%,transparent);
+  padding:.4em .8em;border-radius:8px;margin:.35em 0}
+.ok{color:var(--good);font-weight:700}.no{color:var(--bad);font-weight:700}
+table.t{border-collapse:collapse;margin:.3em 0;font-size:.92em}
+table.t th,table.t td{border:1px solid var(--line);padding:.22em .6em;text-align:center}
+table.t th{background:var(--code)}
+input[type=number],input[type=text]{font:inherit;font-size:.9em;width:5.2em;padding:.15em .35em;border:1px solid var(--line);
+  border-radius:8px;background:var(--paper);color:var(--ink);text-align:center}
+input[type=range]{width:100%;accent-color:var(--acc)}
+.ctrl{display:grid;grid-template-columns:auto 1fr 4.2em;gap:.4em .7em;align-items:center;margin:.3em 0}
+.ctrl b{font-variant-numeric:tabular-nums;text-align:right}
+.ggb{width:100%;flex:1;min-height:340px;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#fff;position:relative}
+.ggb .msg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:1em;color:#5b6475;font-size:.85em}
+.viz{width:100%;height:100%;min-height:300px}
+svg text{font-family:inherit}
+.timer{display:inline-flex;align-items:center;gap:.4em;font-variant-numeric:tabular-nums;font-weight:700;
+  border:2px solid var(--warn);color:var(--warn);border-radius:99px;padding:.1em .8em;cursor:pointer;user-select:none}
+.timer.run{background:var(--warn);color:#fff}
+.portada{justify-content:center}
+.portada .meta{display:grid;grid-template-columns:auto 1fr;gap:.25em 1em;font-size:.9em;margin-top:1em}
+.qlist li{margin:.45em 0}
+.pill{display:inline-block;border:1px solid var(--line);border-radius:99px;padding:.05em .6em;font-size:.8em;margin:.1em}
+.crit{display:grid;grid-template-columns:auto 1fr;gap:.2em .7em;font-size:.8em}
+.crit b{color:var(--acc)}
+/* barra inferior */
+#bar{position:fixed;left:0;right:0;bottom:0;height:54px;display:flex;align-items:center;gap:.6em;padding:0 1em;
+  background:var(--paper);border-top:1px solid var(--line);font-size:15px}
+#bar button{font:inherit;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:8px;height:36px;min-width:40px;cursor:pointer}
+#bar .ttl{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--muted)}
+#prog{position:fixed;left:0;bottom:54px;height:4px;background:var(--acc);transition:width .25s}
+#menu{position:fixed;left:0;top:0;bottom:54px;width:min(420px,92vw);background:var(--paper);border-right:1px solid var(--line);
+  overflow:auto;transform:translateX(-102%);transition:transform .2s;z-index:20;padding:1em;font-size:15px}
+#menu.open{transform:none}
+#menu a{display:block;padding:.35em .5em;border-radius:6px;color:var(--ink);text-decoration:none}
+#menu a:hover,#menu a.cur{background:var(--code)}
+#menu .m{font-weight:700;margin:.7em 0 .2em;color:var(--muted);text-transform:uppercase;font-size:.8em}
+@media (max-width:820px){
+  .slide{padding:1.4em 1.1em 1em}
+  .grid2,.g-wide,.grid3{grid-template-columns:1fr}
+  h1{font-size:1.6em}
+}
+@media print{body{overflow:visible}#bar,#prog,#menu{display:none}#deck{position:static}
+  .slide{display:flex!important;position:relative;page-break-after:always;min-height:100vh}}
+</style>
+</head>
+<body>
+<div id="deck">
+<section class="slide" data-moment="portada" data-title="Portada"><span class="tag">Sesión</span><div class="portada" style="display:flex;flex-direction:column;flex:1;justify-content:center"><div class="muted">Sesión 02 · UA7 · 5.° B · Matemática</div><h1>Repartiendo con justicia: razones y proporciones para el cuidado compartido del salón</h1><div class="meta"><span class="muted">I. E.</span><span>San Juan Apóstol – Arequipa</span><span class="muted">Grado</span><span>5.° B (9:30 – 11:00)</span><span class="muted">Fecha</span><span>Jueves 22 de octubre de 2026</span><span class="muted">Competencia</span><span>Resuelve problemas de cantidad</span><span class="muted">Practicante</span><span>Ever Wilson Bautista Huahuasoncco</span><span class="muted">Docente de aula</span><span>Prof. Nery Saico Gonzales</span></div><p class="small muted" style="margin-top:1.2em">Navega con ← → · F pantalla completa · M índice · ◐ tema</p></div></section>
+<section class="slide" data-moment="inicio" data-title="Experiencia de los plumones" id="sPlum"><span class="tag">Inicio · Motivación</span>
+<div class="g-wide"><div><svg id="plum" class="viz" viewBox="0 0 620 300"></svg></div><div>
+ <h3>¿Repartimos con justicia?</h3>
+ <p>Rosa puso <b>S/ 9</b> y Luis <b>S/ 6</b> para comprar <b>20 plumones</b>.</p>
+ <div class="ctrl"><span>Plumones para Rosa</span><input type="range" id="pR" min="0" max="20" step="0.5" value="10"><b id="pRv">10</b></div>
+ <div class="card" id="pOut" style="font-variant-numeric:tabular-nums"></div>
+ <p class="small muted">Prueben los repartos de cada equipo: 10 y 10 · 11,5 y 8,5 · 12 y 8.</p>
+</div></div></section>
+<section class="slide" data-moment="inicio" data-title="Diagnóstico"><span class="tag">Inicio · Saberes previos</span><h2>Diagnóstico individual</h2><ol class="qlist"><li>Simplifica 18/24.<br><button class="btn" data-show="r49">Respuesta esperada</button><div id="r49" class="hide ans">18/24 = 3/4</div></li><li>¿Qué número falta? 3/5 = x/20<br><button class="btn" data-show="r50">Respuesta esperada</button><div id="r50" class="hide ans">x = 12</div></li></ol></section>
+<section class="slide" data-moment="inicio" data-title="Conflicto cognitivo"><span class="tag">Inicio · Conflicto cognitivo</span><h2>¿Restar o dividir?</h2><div class="grid2"><div class="card warn"><p class="big">Equipo 1: «Rosa puso <b>3 soles más</b>: que reciba 3 plumones más».</p></div><div class="card acc"><p class="big">Equipo 2: «Rosa puso <b>3 por cada 2</b> de Luis».</p></div></div><div class="card "><p>¿Dicen lo mismo? Si Rosa pone <b>S/ 900</b> y Luis <b>S/ 897</b>, ¿qué dice cada forma de comparar?</p></div><p><span class="timer" data-sec="180" title="Clic: iniciar / pausar">⏱ <span>3:00</span> conjeturas</span></p></section>
+<section class="slide" data-moment="inicio" data-title="Propósito y criterios"><span class="tag">Inicio · Propósito</span><h2>Propósito de la sesión</h2><div class="card acc"><p style='font-size:1.12em;font-weight:600'>Estableceremos relaciones de razón y proporción entre cantidades, con simuladores interactivos, para repartir con justicia los recursos y responsabilidades de nuestro salón, y justificaremos nuestras afirmaciones con ejemplos y contraejemplos.</p></div><h3>Criterios de evaluación</h3><div class="crit"><b>C1</b><span>Plantea razones y proporciones entre cantidades del contexto del salón.</span><b>C2</b><span>Resuelve problemas de reparto proporcional con procedimientos adecuados y verifica sus resultados.</span><b>C3</b><span>Justifica afirmaciones sobre la equidad del reparto con ejemplos y contraejemplos.</span><b>C4</b><span>Propone repartos justos que consideran a todos sus compañeros (fraternidad).</span></div><p class="small"><b>Evidencia:</b> Ficha de trabajo y cuadro de reparto proporcional del kit del salón.</p><p class="muted small">Escribe tu meta en el cuaderno: «Hoy voy a aprender a…»</p></section>
+<section class="slide" data-moment="desarrollo" data-title="El kit del salón"><span class="tag">Desarrollo · Comprensión del problema</span><h2>El kit del salón</h2><div class="grid2"><div class="card acc"><p>Reponer el kit de materiales compartidos cuesta <b>S/ 144</b>. Lo usan tres comisiones de <b>6</b>, <b>8</b> y <b>10</b> integrantes.</p><ul class=""><li><b>Propuesta A:</b> cada comisión paga lo mismo.</li><li><b>Propuesta B:</b> según el número de integrantes.</li><li><b>Propuesta C:</b> cada comisión paga S/ 10 más que la anterior.</li></ul></div><div class="card "><h3>Comprendemos</h3><ol class="qlist"><li>¿Qué diferencia hay entre un reparto igualitario y uno equitativo?<br><button class="btn" data-show="r51">Respuesta esperada</button><div id="r51" class="hide ans">Igualitario: todos reciben o pagan lo mismo. Equitativo: según lo que corresponde a cada uno.</div></li><li>¿Qué conviene comparar para saber si una propuesta es justa?<br><button class="btn" data-show="r52">Respuesta esperada</button><div id="r52" class="hide ans">Lo que paga cada integrante (costo por persona).</div></li></ol></div></div></section>
+<section class="slide" data-moment="desarrollo" data-title="Simulador del kit" id="sKit"><span class="tag">Desarrollo · Búsqueda de estrategias</span>
+<div class="g-wide"><div><svg id="kit" class="viz" viewBox="0 0 620 330"></svg></div><div>
+ <h3>Costo por integrante (C2 · C3)</h3>
+ <p class="small">Kit: S/ 144 · comisiones de 6, 8 y 10 integrantes.</p>
+ <div id="kitBtns"></div>
+ <div class="ctrl"><span>Propuesta C: x</span><input type="range" id="kx" min="30" max="44" step="1" value="34"><b id="kxv">34</b></div>
+ <div class="card" id="kitOut" style="font-variant-numeric:tabular-nums;min-height:5em"></div>
+</div></div></section>
+<section class="slide" data-moment="desarrollo" data-title="Pausa activa"><span class="tag">Desarrollo · Regulación</span><h2>Pausa activa: «razón con el cuerpo»</h2><div class="card good"><p class="big">El docente dice una razón (2 : 1, 3 : 2, 1 : 3) y el aula la representa: de pie los antecedentes, sentados los consecuentes.</p></div><p><span class="timer" data-sec="120" title="Clic: iniciar / pausar">⏱ <span>2:00</span></span></p></section>
+<section class="slide" data-moment="desarrollo" data-title="Formalización"><span class="tag">Desarrollo · Formalización</span><h2>Formalizamos</h2><div class="grid3"><div class="card acc"><h3>1 · Comparar</h3><p>Razón aritmética: a − b. Razón geométrica: a / b = k.</p><p>a: antecedente · b: consecuente · k: valor de la razón.</p></div><div class="card acc"><h3>2 · Proporción</h3><span class="formula">a/b = c/d ⇔ a·d = b·c</span><p>9/6 = 12/8 porque 9 × 8 = 6 × 12 = 72.</p></div><div class="card acc"><h3>3 · Reparto proporcional</h3><span class="formula">x/a = y/b = z/c = k</span><p>k = total ÷ (a + b + c); cada parte es a·k, b·k, c·k.</p></div></div><div class="card good">Kit: k = 144 ÷ 24 = 6 → <b>36, 48 y 60</b>. Cada integrante paga S/ 6: la propuesta B es la equitativa.</div></section>
+<section class="slide" data-moment="desarrollo" data-title="Retos por misiones" id="sRep"><span class="tag">Desarrollo · Otros problemas</span>
+<div class="g-wide"><div><svg id="strip" class="viz" viewBox="0 0 620 260"></svg></div><div>
+ <h3>Reparto proporcional directo</h3>
+ <p>Total <input type="number" id="rT" value="210"> entre partes
+ <input type="number" id="r1" value="4"> <input type="number" id="r2" value="6"> <input type="number" id="r3" value="5"></p>
+ <button class="btn solid" id="rGo">Repartir</button>
+ <div class="card" id="rOut" style="font-variant-numeric:tabular-nums;min-height:5em"></div>
+ <p class="small muted">Úsalo para verificar las misiones (rifa: 210 entre 4, 6 y 5).</p>
+</div></div><ol class="qlist"><li>M1: 18 participaron y 12 no. Escribe la razón y su significado.<br><button class="btn" data-show="r53">Respuesta esperada</button><div id="r53" class="hide ans">18 : 12 = 3 : 2 → por cada 3 que participaron, 2 no lo hicieron.</div></li><li>M3: «Si sumo 1 al antecedente y al consecuente, la razón no cambia». ¿Verdadero?<br><button class="btn" data-show="r54">Respuesta esperada</button><div id="r54" class="hide ans">Falso: 2/3 ≈ 0,67 y 3/4 = 0,75 (contraejemplo).</div></li><li>M4: 4/14 = 10/x, ¿cuánto vale x?<br><button class="btn" data-show="r55">Respuesta esperada</button><div id="r55" class="hide ans">x = 35 (4 × 35 = 14 × 10).</div></li></ol></section>
+<section class="slide" data-moment="cierre" data-title="Ticket de salida"><span class="tag">Cierre · Evaluación</span><h2>Ticket de salida (sin apuntes)</h2><div class="card good"><p>Resuelve el ticket de la ficha.</p><button class="btn" data-show="r56">Clave docente</button><div id="r56" class="hide ans">1) k = 10 → S/ 20, 30 y 40. 2) No: proporcional es k = 12 → S/ 24 y S/ 36; Ana comparó restando.</div></div><p><span class="timer" data-sec="360" title="Clic: iniciar / pausar">⏱ <span>6:00</span></span></p></section>
+<section class="slide" data-moment="cierre" data-title="Metacognición"><span class="tag">Cierre · Metacognición</span><h2>Retomamos los plumones</h2><div class="card acc"><p class="big">20 ÷ 15 = 4/3 de plumón por sol → Rosa: 9 × 4/3 = <b>12</b>; Luis: <b>8</b>.</p></div><ul class=""><li>¿En qué se diferencia comparar restando de comparar dividiendo?</li><li>¿Qué me ayudó a avanzar hoy?</li><li>¿Cómo cuida un reparto proporcional la fraternidad del salón?</li></ul><div class="card "><b>Tarea N.° 05:</b> razones en 5.° A (14 mujeres, 16 varones); 6/9 = x/15; repartir 120 hojas entre 5, 7 y 8; reto de Marco.</div></section>
+</div>
+<div id="prog"></div>
+<nav id="menu"></nav>
+<div id="bar">
+  <button id="bMenu" title="Índice (M)">☰</button>
+  <button id="bPrev" title="Anterior (←)">◀</button>
+  <button id="bNext" title="Siguiente (→)">▶</button>
+  <span id="num"></span>
+  <span class="ttl" id="ttl"></span>
+  <button id="bTheme" title="Tema claro/oscuro">◐</button>
+  <button id="bFull" title="Pantalla completa (F)">⛶</button>
+</div>
+<script>
+/* ===== Motor de la presentación ===== */
+const GGB = {};          /* definiciones de applets GeoGebra: GGB[id] = {cmds:[], view:[xmin,xmax,ymin,ymax], after:fn, axes:true, grid:true} */
+const ON = {};           /* ON[slideId] = función que se ejecuta al entrar a la diapositiva */
+const API = {};          /* API[id] = applet GeoGebra cargado */
+const $ = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => [...r.querySelectorAll(s)];
+const fmt = (x, d=2) => (Math.round(x*10**d)/10**d + 0).toLocaleString('es-ES',{maximumFractionDigits:d,useGrouping:false});
+let slides = [], cur = 0;
+
+function show(i){
+  i = Math.max(0, Math.min(slides.length-1, i));
+  slides[cur] && slides[cur].classList.remove('active');
+  cur = i; const s = slides[cur]; s.classList.add('active');
+  $('#num').textContent = (cur+1) + ' / ' + slides.length;
+  $('#ttl').textContent = s.dataset.title || '';
+  $('#prog').style.width = ((cur+1)/slides.length*100) + '%';
+  $$('#menu a').forEach((a,k)=>a.classList.toggle('cur',k===cur));
+  try{ history.replaceState(null,'','#'+(cur+1)); }catch(e){}
+  $$('[data-ggb]', s).forEach(loadGGB);
+  if (s.id && ON[s.id]) { try{ ON[s.id](s); }catch(e){ console.error(e); } }
+  s.scrollTop = 0;
+}
+function buildMenu(){
+  const m = $('#menu'); let last = '';
+  const names = {portada:'Presentación', inicio:'Inicio', desarrollo:'Desarrollo', cierre:'Cierre'};
+  slides.forEach((s,k)=>{
+    const mo = s.dataset.moment || '';
+    if (mo !== last){ const d=document.createElement('div'); d.className='m'; d.textContent=names[mo]||mo; m.appendChild(d); last = mo; }
+    const a = document.createElement('a'); a.href = '#'+(k+1); a.textContent = (k+1)+'. '+(s.dataset.title||'');
+    a.onclick = e => { e.preventDefault(); show(k); m.classList.remove('open'); };
+    m.appendChild(a);
+  });
+}
+/* ---- botones "mostrar" ---- */
+document.addEventListener('click', e=>{
+  const b = e.target.closest('[data-show]');
+  if (b){ const t = document.getElementById(b.dataset.show); if(t){ t.classList.toggle('hide'); b.classList.toggle('solid'); } }
+  const tm = e.target.closest('.timer'); if (tm) toggleTimer(tm);
+});
+/* ---- temporizador ---- */
+function toggleTimer(el){
+  if (el._iv){ clearInterval(el._iv); el._iv=null; el.classList.remove('run'); return; }
+  if (el._left === undefined || el._left <= 0) el._left = +el.dataset.sec;
+  el.classList.add('run');
+  const draw = ()=>{ const m=Math.floor(el._left/60), s=el._left%60; el.querySelector('span').textContent = m+':'+String(s).padStart(2,'0'); };
+  draw();
+  el._iv = setInterval(()=>{ el._left--; draw(); if(el._left<=0){ clearInterval(el._iv); el._iv=null; el.classList.remove('run'); beep(); } },1000);
+}
+function beep(){ try{ const c=new (window.AudioContext||window.webkitAudioContext)(); const o=c.createOscillator(); const g=c.createGain();
+  o.connect(g); g.connect(c.destination); o.frequency.value=880; g.gain.value=.15; o.start(); setTimeout(()=>{o.stop(); c.close();},600);}catch(e){} }
+/* ---- GeoGebra ---- */
+let ggbState = 'none'; const ggbQueue = [];
+function loadGGBScript(){
+  if (ggbState !== 'none') return; ggbState = 'loading';
+  const sc = document.createElement('script'); sc.src = 'https://www.geogebra.org/apps/deployggb.js';
+  sc.onload = ()=>{ ggbState='ready'; ggbQueue.splice(0).forEach(injectGGB); };
+  sc.onerror = ()=>{ ggbState='fail'; ggbQueue.splice(0).forEach(failGGB); };
+  document.head.appendChild(sc);
+  setTimeout(()=>{ if(ggbState==='loading'){ ggbState='fail'; ggbQueue.splice(0).forEach(failGGB);} }, 20000);
+}
+function failGGB(el){ el.innerHTML = '<div class="msg">No se pudo cargar GeoGebra.<br>Este applet necesita conexión a internet.<br>Conéctate y recarga la página (F5).</div>'; }
+function loadGGB(el){
+  if (el.dataset.loaded) return; el.dataset.loaded = '1';
+  el.innerHTML = '<div class="msg">Cargando GeoGebra…</div>';
+  if (ggbState === 'ready') injectGGB(el); else if (ggbState === 'fail') failGGB(el); else { ggbQueue.push(el); loadGGBScript(); }
+}
+function injectGGB(el){
+  const id = el.dataset.ggb, def = GGB[id];
+  const box = document.createElement('div'); box.id = 'ggbx_'+id; el.innerHTML=''; el.appendChild(box);
+  const w = Math.max(300, el.clientWidth), h = Math.max(300, el.clientHeight);
+  const p = { appName:'classic', width:w, height:h, perspective:'G', showToolBar:false, showAlgebraInput:false, showMenuBar:false,
+    showResetIcon:false, enableShiftDragZoom:true, enableRightClick:false, enableLabelDrags:false, showZoomButtons:true,
+    language:'es', borderColor:'#ffffff', errorDialogsActive:false, useBrowserForJS:true,
+    appletOnLoad: api => {
+      API[id] = api;
+      api.setAxesVisible(def.axes!==false, def.axes!==false); api.setGridVisible(def.grid!==false);
+      (def.cmds||[]).forEach(c=>{ const ok = api.evalCommand(c); if(!ok) console.warn('GGB cmd falló:', id, c); });
+      if (def.view) api.setCoordSystem(...def.view);
+      if (def.fit){ /* encuadre con escala 1:1 */
+        const [x0,x1,y0,y1] = def.fit, s = Math.max((x1-x0)/w, (y1-y0)/h), cx=(x0+x1)/2, cy=(y0+y1)/2;
+        api.setCoordSystem(cx - s*w/2, cx + s*w/2, cy - s*h/2, cy + s*h/2); }
+      if (def.after) def.after(api);
+      el.dispatchEvent(new CustomEvent('ggbready',{detail:api}));
+    } };
+  const app = new GGBApplet(p, true);
+  if (window.GGB_CODEBASE) app.setHTML5Codebase(window.GGB_CODEBASE);
+  app.inject(box.id);
+}
+function ggbStyle(api, name, o){
+  if (!api.exists(name)) { console.warn('no existe', name); return; }
+  if (o.c) api.setColor(name, ...o.c);
+  if (o.t !== undefined) api.setLineThickness(name, o.t);
+  if (o.f !== undefined) api.setFilling(name, o.f);
+  if (o.ps !== undefined) api.setPointSize(name, o.ps);
+  if (o.lab !== undefined) api.setLabelVisible(name, o.lab);
+  if (o.cap !== undefined){ api.setCaption(name, o.cap); api.setLabelStyle(name, 3); api.setLabelVisible(name, true); }
+  if (o.fix) api.setFixed(name, true, false);
+  if (o.ls !== undefined) api.setLineStyle(name, o.ls);
+  if (o.vis !== undefined) api.setVisible(name, o.vis);
+}
+/* ---- arranque ---- */
+function boot(){
+  slides = $$('.slide'); buildMenu();
+  $('#bPrev').onclick = ()=>show(cur-1); $('#bNext').onclick = ()=>show(cur+1);
+  $('#bMenu').onclick = ()=>$('#menu').classList.toggle('open');
+  $('#bFull').onclick = full;
+  $('#bTheme').onclick = ()=>{ const r=document.documentElement; const d = r.dataset.theme==='dark' || (!r.dataset.theme && matchMedia('(prefers-color-scheme: dark)').matches);
+    r.dataset.theme = d ? 'light' : 'dark'; };
+  document.addEventListener('keydown', e=>{
+    if (e.target.matches('input,textarea,select')) return;
+    if (['ArrowRight','PageDown',' '].includes(e.key)){ e.preventDefault(); show(cur+1); }
+    else if (['ArrowLeft','PageUp'].includes(e.key)){ e.preventDefault(); show(cur-1); }
+    else if (e.key==='Home') show(0); else if (e.key==='End') show(slides.length-1);
+    else if (e.key==='f'||e.key==='F') full(); else if (e.key==='m'||e.key==='M') $('#menu').classList.toggle('open');
+  });
+  const h = parseInt((location.hash||'').slice(1)); show(isNaN(h)?0:h-1);
+}
+function full(){ if(!document.fullscreenElement) document.documentElement.requestFullscreen().catch(()=>{}); else document.exitFullscreen(); }
+</script>
+<script>
+
+/* ---- controles HTML enlazados a GeoGebra ---- */
+const VAL = {};
+function setOut(key, v){ $$('[data-out="'+key+'"]').forEach(o=>{ const u=o.dataset.unit||''; o.textContent = fmt(+v,2)+u; }); }
+document.addEventListener('input', e=>{
+  const el = e.target;
+  if (el.dataset.bind){ const [a,v]=el.dataset.bind.split(':'); VAL[a]=VAL[a]||{}; VAL[a][v]=+el.value;
+    setOut(el.dataset.bind, el.value); if(API[a]) API[a].setValue(v, +el.value); if(UPD[a]) UPD[a](VAL[a]); }
+  if (el.dataset.bindc){ const [a,v]=el.dataset.bindc.split(':'); VAL[a]=VAL[a]||{}; VAL[a][v]=el.checked?1:0;
+    if(API[a]) API[a].setValue(v, el.checked?1:0); if(UPD[a]) UPD[a](VAL[a]); }
+});
+const UPD = {};
+function initBinds(){
+  $$('[data-bind]').forEach(el=>{ const [a,v]=el.dataset.bind.split(':'); VAL[a]=VAL[a]||{}; VAL[a][v]=+el.value; setOut(el.dataset.bind, el.value); });
+  $$('[data-bindc]').forEach(el=>{ const [a,v]=el.dataset.bindc.split(':'); VAL[a]=VAL[a]||{}; VAL[a][v]=el.checked?1:0; });
+  Object.keys(UPD).forEach(a=>UPD[a](VAL[a]||{}));
+}
+document.addEventListener('ggbready', e=>{
+  const el = e.target, a = el.dataset.ggb, api = e.detail;
+  Object.entries(VAL[a]||{}).forEach(([v,x])=>{ if(api.exists(v)) api.setValue(v,x); });
+}, true);
+document.addEventListener('DOMContentLoaded', initBinds);
+
+function plum(){ const r=+$('#pR').value, l=20-r; $('#pRv').textContent=fmt(r,1);
+  const svg=$('#plum'); let s='';
+  for(let i=0;i<20;i++){ const x=20+(i%10)*58, y=40+Math.floor(i/10)*90, rosa=i<Math.floor(r), half=(i===Math.floor(r)&&r%1);
+    s+=`<rect x="${x}" y="${y}" width="44" height="70" rx="8" fill="${rosa?'#f472b6':(half?'url(#hf)':'#60a5fa')}" stroke="#334"/>`; }
+  s = `<defs><linearGradient id="hf"><stop offset="50%" stop-color="#f472b6"/><stop offset="50%" stop-color="#60a5fa"/></linearGradient></defs>` + s
+    + `<text x="20" y="250" font-size="22" fill="#db2777" font-weight="700">Rosa: ${fmt(r,1)}</text><text x="380" y="250" font-size="22" fill="#2563eb" font-weight="700">Luis: ${fmt(l,1)}</text>`;
+  svg.innerHTML=s;
+  const pr=r/9, pl=l/6, eq=Math.abs(pr-pl)<1e-9;
+  $('#pOut').innerHTML = `Rosa: ${fmt(r,1)} ÷ 9 = <b>${fmt(pr,3)}</b> plumones por sol<br>Luis: ${fmt(l,1)} ÷ 6 = <b>${fmt(pl,3)}</b> plumones por sol<br>`
+    + (eq ? '<span class="ok">✓ Los dos reciben lo mismo por cada sol: reparto proporcional (razón 3 : 2).</span>'
+          : `<span class="no">✗ ${pr>pl?'Rosa':'Luis'} recibe más por cada sol aportado.</span>`); }
+ON.sPlum = plum;
+document.addEventListener('input', e=>{ if(e.target.id==='pR') plum(); if(e.target.id==='kx') kit(kitSel); });
+const COM=[6,8,10]; let kitSel='A';
+function kitPay(p){ const x=+($('#kx')?.value||34); return p==='A'?[48,48,48]:p==='B'?COM.map(n=>n*6):[x,x+10,x+20]; }
+function kit(p){ kitSel=p; $('#kxv').textContent=$('#kx').value; const pay=kitPay(p), per=pay.map((v,i)=>v/COM[i]), tot=pay.reduce((a,b)=>a+b,0);
+  const svg=$('#kit'), mx=9; let s='<line x1="60" y1="280" x2="600" y2="280" stroke="currentColor"/>';
+  per.forEach((v,i)=>{ const h=v/mx*230, x=100+i*170; s+=`<rect x="${x}" y="${280-h}" width="110" height="${h}" fill="${['#f59e0b','#0e8a6a','#7c3aed'][i]}" opacity=".8"/>`
+    + `<text x="${x+55}" y="${270-h}" text-anchor="middle" font-size="20" font-weight="700" fill="currentColor">S/ ${fmt(v)}</text>`
+    + `<text x="${x+55}" y="305" text-anchor="middle" font-size="18" fill="currentColor">${COM[i]} integrantes</text>`; });
+  s+=`<text x="60" y="30" font-size="18" fill="currentColor">Pago por integrante · Propuesta ${p}</text>`; svg.innerHTML=s;
+  const eq=per.every(v=>Math.abs(v-per[0])<1e-9);
+  $('#kitOut').innerHTML = `Pagos: ${pay.map(v=>'S/ '+fmt(v)).join(' · ')} · total S/ ${fmt(tot)} ${tot===144?'<span class="ok">✓</span>':'<span class="no">≠ 144</span>'}<br>`
+    + (eq?'<span class="ok">Todos los integrantes pagan lo mismo: es equitativa.</span>':'<span class="no">Los integrantes no pagan lo mismo.</span>')
+    + (p==='C'?`<br>Ecuación: 3x + 30 = 144 → x = ${fmt(114/3)}`:''); }
+ON.sKit = ()=>{ const b=$('#kitBtns'); if(!b.children.length) ['A','B','C'].forEach(p=>{ const x=document.createElement('button'); x.className='btn'; x.textContent='Propuesta '+p; x.onclick=()=>kit(p); b.appendChild(x); }); kit(kitSel); };
+function rep(){ const T=+$('#rT').value, p=[+$('#r1').value,+$('#r2').value,+$('#r3').value].filter(v=>v>0), S=p.reduce((a,b)=>a+b,0);
+  if(!S){ $('#rOut').textContent='Escribe las partes.'; return; } const k=T/S, parts=p.map(v=>v*k);
+  const svg=$('#strip'), w=560/S; let s='', x=30, cols=['#f59e0b','#0e8a6a','#7c3aed'];
+  p.forEach((v,i)=>{ for(let j=0;j<v;j++){ s+=`<rect x="${x}" y="60" width="${w-2}" height="70" fill="${cols[i]}" opacity=".8"/>`; x+=w; }
+    s+=`<text x="${x - v*w/2}" y="165" text-anchor="middle" font-size="20" font-weight="700" fill="${cols[i]}">${fmt(parts[i])}</text>`; });
+  s+=`<text x="30" y="40" font-size="18" fill="currentColor">Cada casilla vale k = ${fmt(T)} ÷ ${S} = ${fmt(k)}</text>`; svg.innerHTML=s;
+  $('#rOut').innerHTML = `k = ${fmt(T)} ÷ (${p.join(' + ')}) = <b>${fmt(k)}</b><br>Partes: ${parts.map(v=>'<b>'+fmt(v)+'</b>').join(' · ')}<br>Verificación: ${parts.map(v=>fmt(v)).join(' + ')} = ${fmt(parts.reduce((a,b)=>a+b,0))} ✓`; }
+document.addEventListener('click', e=>{ if(e.target.id==='rGo') rep(); });
+ON.sRep = rep;
+
+</script>
+<script>boot();</script>
+</body>
+</html>

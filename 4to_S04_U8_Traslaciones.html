@@ -1,0 +1,349 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Diseñamos guirnaldas navideñas en familia: traslaciones en e</title>
+<style>
+:root{
+  --bg:#f6f4ee; --paper:#ffffff; --ink:#1d2433; --muted:#5b6475; --line:#d9d4c7;
+  --acc:#1f5fbf; --acc2:#0e8a6a; --warn:#c2410c; --bad:#b42318; --good:#147a3d;
+  --ini:#c2410c; --des:#1f5fbf; --cie:#0e8a6a;
+  --hl:#fff3c4; --code:#f1efe8;
+  --fs: clamp(17px, 1.85vw, 32px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#14171d; --paper:#1d222b; --ink:#e9edf4; --muted:#a3acbb; --line:#323a47;
+    --acc:#6ea8ff; --acc2:#3ccf9f; --warn:#ff9a5c; --bad:#ff7b72; --good:#4ade80;
+    --ini:#ff9a5c; --des:#6ea8ff; --cie:#3ccf9f; --hl:#4a3f12; --code:#262c37;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#14171d; --paper:#1d222b; --ink:#e9edf4; --muted:#a3acbb; --line:#323a47;
+  --acc:#6ea8ff; --acc2:#3ccf9f; --warn:#ff9a5c; --bad:#ff7b72; --good:#4ade80;
+  --ini:#ff9a5c; --des:#6ea8ff; --cie:#3ccf9f; --hl:#4a3f12; --code:#262c37;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);
+  font-family:"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;font-size:var(--fs);line-height:1.35}
+body{overflow:hidden}
+#deck{position:fixed;inset:0 0 54px 0}
+.slide{position:absolute;inset:0;display:none;padding:2.2em 3.2em 1.2em;overflow:auto}
+.slide.active{display:flex;flex-direction:column;animation:fade .25s ease}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.tag{display:inline-flex;gap:.5em;align-items:center;font-size:.72em;font-weight:700;letter-spacing:.06em;
+  text-transform:uppercase;color:#fff;background:var(--des);border-radius:99px;padding:.18em .8em;align-self:flex-start}
+.slide[data-moment="inicio"] .tag{background:var(--ini)}
+.slide[data-moment="cierre"] .tag{background:var(--cie)}
+.slide[data-moment="portada"] .tag{background:var(--muted)}
+h1{font-size:2.1em;line-height:1.1;margin:.35em 0 .3em}
+h2{font-size:1.55em;line-height:1.15;margin:.35em 0 .45em}
+h3{font-size:1.1em;margin:.4em 0 .3em;color:var(--acc)}
+p{margin:.35em 0}
+ul,ol{margin:.3em 0 .3em 1.2em;padding:0}
+li{margin:.22em 0}
+.muted{color:var(--muted)}
+.small{font-size:.8em}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:1.2em;align-items:start}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:1em}
+.g-wide{display:grid;grid-template-columns:1.55fr 1fr;gap:1.2em;flex:1;min-height:0}
+.g-wide>div,.grid2.fill>div{min-height:0;display:flex;flex-direction:column}
+.grid2.fill{flex:1;min-height:0}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:.8em 1em}
+.card.acc{border-left:6px solid var(--acc)}
+.card.warn{border-left:6px solid var(--warn)}
+.card.good{border-left:6px solid var(--good)}
+.big{font-size:1.35em;font-weight:700}
+.formula{font-family:"Cambria Math","STIX Two Math","Times New Roman",serif;font-size:1.3em;background:var(--code);
+  border-radius:10px;padding:.25em .7em;display:inline-block;margin:.2em 0}
+mark{background:var(--hl);color:inherit;padding:0 .15em;border-radius:4px}
+.btn{font:inherit;font-size:.82em;border:1px solid var(--acc);color:var(--acc);background:transparent;border-radius:10px;
+  padding:.35em .85em;cursor:pointer;margin:.2em .3em .2em 0}
+.btn:hover{background:var(--acc);color:#fff}
+.btn.solid{background:var(--acc);color:#fff}
+.hide{display:none!important}
+.ans{border-left:5px solid var(--good);background:color-mix(in srgb,var(--good) 10%,transparent);
+  padding:.4em .8em;border-radius:8px;margin:.35em 0}
+.ok{color:var(--good);font-weight:700}.no{color:var(--bad);font-weight:700}
+table.t{border-collapse:collapse;margin:.3em 0;font-size:.92em}
+table.t th,table.t td{border:1px solid var(--line);padding:.22em .6em;text-align:center}
+table.t th{background:var(--code)}
+input[type=number],input[type=text]{font:inherit;font-size:.9em;width:5.2em;padding:.15em .35em;border:1px solid var(--line);
+  border-radius:8px;background:var(--paper);color:var(--ink);text-align:center}
+input[type=range]{width:100%;accent-color:var(--acc)}
+.ctrl{display:grid;grid-template-columns:auto 1fr 4.2em;gap:.4em .7em;align-items:center;margin:.3em 0}
+.ctrl b{font-variant-numeric:tabular-nums;text-align:right}
+.ggb{width:100%;flex:1;min-height:340px;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#fff;position:relative}
+.ggb .msg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:1em;color:#5b6475;font-size:.85em}
+.viz{width:100%;height:100%;min-height:300px}
+svg text{font-family:inherit}
+.timer{display:inline-flex;align-items:center;gap:.4em;font-variant-numeric:tabular-nums;font-weight:700;
+  border:2px solid var(--warn);color:var(--warn);border-radius:99px;padding:.1em .8em;cursor:pointer;user-select:none}
+.timer.run{background:var(--warn);color:#fff}
+.portada{justify-content:center}
+.portada .meta{display:grid;grid-template-columns:auto 1fr;gap:.25em 1em;font-size:.9em;margin-top:1em}
+.qlist li{margin:.45em 0}
+.pill{display:inline-block;border:1px solid var(--line);border-radius:99px;padding:.05em .6em;font-size:.8em;margin:.1em}
+.crit{display:grid;grid-template-columns:auto 1fr;gap:.2em .7em;font-size:.8em}
+.crit b{color:var(--acc)}
+/* barra inferior */
+#bar{position:fixed;left:0;right:0;bottom:0;height:54px;display:flex;align-items:center;gap:.6em;padding:0 1em;
+  background:var(--paper);border-top:1px solid var(--line);font-size:15px}
+#bar button{font:inherit;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:8px;height:36px;min-width:40px;cursor:pointer}
+#bar .ttl{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--muted)}
+#prog{position:fixed;left:0;bottom:54px;height:4px;background:var(--acc);transition:width .25s}
+#menu{position:fixed;left:0;top:0;bottom:54px;width:min(420px,92vw);background:var(--paper);border-right:1px solid var(--line);
+  overflow:auto;transform:translateX(-102%);transition:transform .2s;z-index:20;padding:1em;font-size:15px}
+#menu.open{transform:none}
+#menu a{display:block;padding:.35em .5em;border-radius:6px;color:var(--ink);text-decoration:none}
+#menu a:hover,#menu a.cur{background:var(--code)}
+#menu .m{font-weight:700;margin:.7em 0 .2em;color:var(--muted);text-transform:uppercase;font-size:.8em}
+@media (max-width:820px){
+  .slide{padding:1.4em 1.1em 1em}
+  .grid2,.g-wide,.grid3{grid-template-columns:1fr}
+  h1{font-size:1.6em}
+}
+@media print{body{overflow:visible}#bar,#prog,#menu{display:none}#deck{position:static}
+  .slide{display:flex!important;position:relative;page-break-after:always;min-height:100vh}}
+</style>
+</head>
+<body>
+<div id="deck">
+<section class="slide" data-moment="portada" data-title="Portada"><span class="tag">Sesión</span><div class="portada" style="display:flex;flex-direction:column;flex:1;justify-content:center"><div class="muted">Sesión 04 · UA8 · 4.° A y B · Matemática</div><h1>Diseñamos guirnaldas navideñas en familia: traslaciones en el plano cartesiano</h1><div class="meta"><span class="muted">I. E.</span><span>San Juan Apóstol – Arequipa</span><span class="muted">Grado</span><span>4.° A (8:00 – 9:30) y 4.° B (11:30 – 1:00)</span><span class="muted">Fecha</span><span>Jueves 19 de noviembre de 2026</span><span class="muted">Competencia</span><span>Resuelve problemas de forma, movimiento y localización</span><span class="muted">Practicante</span><span>Ever Wilson Bautista Huahuasoncco</span><span class="muted">Docente de aula</span><span>Prof. Nery Saico Gonzales</span></div><p class="small muted" style="margin-top:1.2em">Navega con ← → · F pantalla completa · M índice · ◐ tema</p></div></section>
+<section class="slide" data-moment="inicio" data-title="Juego del mensajero" id="sMsg"><span class="tag">Inicio · Motivación</span>
+<div class="g-wide"><div><svg id="msg" class="viz" viewBox="0 0 640 420"></svg></div><div style="font-size:.9em">
+ <h3>Juego del mensajero</h3>
+ <ol class="small"><li>El constructor pulsa <b>Nueva posición secreta</b> (los demás equipos no miran).</li>
+ <li>El registrador escribe un mensaje para que otro equipo ubique el árbol.</li>
+ <li>El otro equipo traduce el mensaje a movimientos y lo prueba.</li></ol>
+ <button class="btn solid" id="mNew">Nueva posición secreta</button> <button class="btn" id="mShow">Mostrar / ocultar destino</button>
+ <p><input type="text" id="mTxt" placeholder="Mensaje del equipo…" style="width:100%;text-align:left"></p>
+ <p>→ (+ der. / − izq.) <input type="number" id="mA" value="0"> ↑ (+ arr. / − abajo) <input type="number" id="mB" value="0">
+ <button class="btn solid" id="mTry">Probar</button></p>
+ <div class="card" id="mFb">¿Qué información mínima necesita el mensaje?</div>
+</div></div></section>
+<section class="slide" data-moment="inicio" data-title="Diagnóstico"><span class="tag">Inicio · Saberes previos</span><h2>Diagnóstico individual</h2><ol class="qlist"><li>Ubica en el plano los puntos A(2; 3) y B(−1; 4).<br><button class="btn" data-show="r15">Respuesta esperada</button><div id="r15" class="hide ans">A está 2 a la derecha y 3 arriba del origen; B, 1 a la izquierda y 4 arriba.</div></li><li>¿Qué punto está 3 unidades a la derecha de A?<br><button class="btn" data-show="r16">Respuesta esperada</button><div id="r16" class="hide ans">(5; 3): solo cambia la abscisa.</div></li></ol></section>
+<section class="slide" data-moment="inicio" data-title="Conflicto cognitivo"><span class="tag">Inicio · Conflicto cognitivo</span><h2>¿Qué le faltó al mensaje?</h2><div class="card warn"><p class="big">Dos equipos movieron el árbol «9 cuadritos», pero uno quedó arriba y otro abajo. Otro escribió <mark>«9 a la derecha y 2 arriba»</mark> y sí lo logró.</p><p>¿Qué información mínima necesita un mensaje para describir un movimiento? ¿Cambió el tamaño o la forma del árbol?</p></div><p><span class="timer" data-sec="240" title="Clic: iniciar / pausar">⏱ <span>4:00</span> conjeturas</span></p></section>
+<section class="slide" data-moment="inicio" data-title="Propósito y criterios"><span class="tag">Inicio · Propósito</span><h2>Propósito de la sesión</h2><div class="card acc"><p style='font-size:1.12em;font-weight:600'>Representaremos traslaciones de figuras en el plano cartesiano mediante vectores, con material concreto y GeoGebra, y describiremos las coordenadas de la figura inicial y de su imagen al diseñar guirnaldas y cenefas navideñas en familia.</p></div><h3>Criterios de evaluación</h3><div class="crit"><b>C1</b><span>Representa la traslación de una figura de la guirnalda mediante un vector, a partir de su posición inicial y final.</span><b>C2</b><span>Describe con lenguaje geométrico y notación vectorial las coordenadas de la figura inicial y de su imagen.</span><b>C3</b><span>Construye la imagen aplicando (x; y) → (x + a; y + b) y traslaciones sucesivas.</span><b>C4</b><span>Justifica qué propiedades se conservan en una traslación y valida afirmaciones con ejemplos y contraejemplos.</span></div><p class="small"><b>Evidencia:</b> Ficha de trabajo y diseño de la guirnalda navideña (verificado en GeoGebra).</p><p class="muted small">Escribe tu meta en el cuaderno: «Hoy voy a aprender a…»</p></section>
+<section class="slide" data-moment="desarrollo" data-title="Situación problemática"><span class="tag">Desarrollo · Comprensión del problema</span><h2>La guirnalda de la familia Quispe</h2><div class="grid2"><div class="card acc"><p>El árbol de la guirnalda tiene vértices <b>A(1; 1)</b>, <b>B(3; 1)</b> y <b>C(2; 4)</b>. Cada copia se obtiene trasladando la anterior con <b>v = (4; 0)</b>. La fila superior usa <b>w = (2; 5)</b>.</p><ol class=""><li>Coordenadas de la 1.ª y 2.ª copia.</li><li>Coordenadas del árbol de la fila superior.</li><li>¿Qué vector lleva el original a la 2.ª copia?</li><li>¿El árbol cambia de tamaño?</li></ol></div><div class="card "><h3>Pienso – me reúno – comparto</h3><ol class="qlist"><li>¿Qué significan los números 4 y 0 de v?<br><button class="btn" data-show="r17">Respuesta esperada</button><div id="r17" class="hide ans">4 unidades a la derecha y 0 hacia arriba o abajo.</div></li><li>¿v = (4; 0) es un lugar del plano o un movimiento?<br><button class="btn" data-show="r18">Respuesta esperada</button><div id="r18" class="hide ans">Un movimiento: indica cuánto y hacia dónde se desplaza cada punto.</div></li></ol></div></div></section>
+<section class="slide" data-moment="desarrollo" data-title="GeoGebra: la guirnalda" id="sTras"><span class="tag">Desarrollo · Búsqueda de estrategias (C2 · C3)</span><div class="g-wide"><div><div class="ggb" data-ggb="tras"></div></div><div><h3>Guirnalda de la familia Quispe</h3><div class="ctrl"><span>Componente a (→)</span><input type="range" data-bind="tras:a" min="-6" max="8" step="1" value="4"><b data-out="tras:a">4</b></div><div class="ctrl"><span>Componente b (↑)</span><input type="range" data-bind="tras:b" min="-5" max="6" step="1" value="0"><b data-out="tras:b">0</b></div><p><label class="pill"><input type="checkbox" data-bindc="tras:ver2"> 2.ª copia (v + v)</label><label class="pill"><input type="checkbox" data-bindc="tras:verW"> Fila superior w = (2; 5)</label></p><table class="t" id="trT"></table><button class="btn" data-show="r13">Clave</button><div id="r13" class="hide ans">v = (4; 0): A’(5; 1), B’(7; 1), C’(6; 4). 2.ª copia: (9; 1), (11; 1), (10; 4). Con w = (2; 5): (3; 6), (5; 6), (4; 9). AB = A’B’ = 2: la traslación conserva medidas, ángulos, forma y orientación.</div></div></div></section>
+<section class="slide" data-moment="desarrollo" data-title="GeoGebra: traslaciones sucesivas" id="sSuc"><span class="tag">Desarrollo · Búsqueda de estrategias (C3)</span><div class="g-wide"><div><div class="ggb" data-ggb="suc"></div></div><div><h3>Traslaciones sucesivas (C3)</h3><p>Primero v, luego w. ¿Qué único vector produce el mismo movimiento?</p><div class="ctrl"><span>v: a</span><input type="range" data-bind="suc:p" min="-6" max="8" step="1" value="4"><b data-out="suc:p">4</b></div><div class="ctrl"><span>v: b</span><input type="range" data-bind="suc:q" min="-5" max="5" step="1" value="3"><b data-out="suc:q">3</b></div><div class="ctrl"><span>w: a</span><input type="range" data-bind="suc:r" min="-6" max="8" step="1" value="6"><b data-out="suc:r">6</b></div><div class="ctrl"><span>w: b</span><input type="range" data-bind="suc:s" min="-5" max="5" step="1" value="-2"><b data-out="suc:s">-2</b></div><div class="card" id="sucOut" style="font-variant-numeric:tabular-nums"></div><button class="btn" data-show="r14">Conclusión</button><div id="r14" class="hide ans">v + w = (a₁ + a₂; b₁ + b₂). Con v = (4; 3) y w = (6; −2): v + w = (10; 1).</div></div></div></section>
+<section class="slide" data-moment="desarrollo" data-title="Galería de cenefas"><span class="tag">Desarrollo · Socialización (C2 · C4)</span><h2>Galería de cenefas</h2><div class="card acc"><ul class=""><li>Pegamos los papelógrafos y rotamos 1 minuto por cada uno.</li><li>Dejamos una nota: «Coincide / no coincide con nuestra respuesta porque…».</li><li>Verificamos en GeoGebra los casos dudosos.</li><li>¿Qué estrategia es más rápida para 10 copias: la cuadrícula, la tabla o GeoGebra?</li><li>¿Por qué todos los vértices se mueven igual?</li></ul></div><p><span class="timer" data-sec="480" title="Clic: iniciar / pausar">⏱ <span>8:00</span> galería</span></p></section>
+<section class="slide" data-moment="desarrollo" data-title="Formalización"><span class="tag">Desarrollo · Formalización</span><h2>Formalizamos</h2><div class="grid2"><div class="card acc"><p><b>Traslación:</b> mueve todos los puntos de una figura la misma distancia, en la misma dirección y sentido.</p><p>Se determina con un vector <b>v = (a; b)</b>: a horizontal (+ derecha, − izquierda), b vertical (+ arriba, − abajo).</p><span class="formula">(x; y) → (x + a; y + b)</span></div><div class="card "><h3>Propiedades</h3><ul class=""><li>Conserva medidas de lados y ángulos.</li><li>Conserva forma y orientación.</li><li>Sucesivas: v + w = (a₁ + a₂; b₁ + b₂).</li><li>Vector desde un punto y su imagen: v = (x’ − x; y’ − y).</li></ul></div></div></section>
+<section class="slide" data-moment="desarrollo" data-title="Otros problemas"><span class="tag">Desarrollo · Otros problemas</span><h2>Ficha de planteamiento de otros problemas</h2><div class="grid2"><div class="card "><h3>P1 · La caja de regalo (C3)</h3><p>Traslada el cuadrado con v = (5; −3).</p><button class="btn" data-show="r19">Mostrar respuesta</button><div id="r19" class="hide ans">Suma 5 a cada abscisa y resta 3 a cada ordenada.</div></div><div class="card "><h3>P2 · La campana (C1)</h3><p>Halla el vector a partir de un vértice y su imagen.</p><button class="btn" data-show="r20">Mostrar respuesta</button><div id="r20" class="hide ans">v = (x’ − x; y’ − y).</div></div><div class="card "><h3>P3 · La vela (C2)</h3><p>Describe con palabras y notación la traslación dibujada.</p><button class="btn" data-show="r21">Mostrar respuesta</button><div id="r21" class="hide ans">«Cada punto se mueve a unidades a la … y b unidades …»; A → A’, v = (a; b).</div></div><div class="card "><h3>P4 · ¿Verdadero o falso? (C4)</h3><p>Valida las afirmaciones de Sofía y Diego con propiedades y contraejemplos.</p><button class="btn" data-show="r22">Mostrar respuesta</button><div id="r22" class="hide ans">Una traslación nunca cambia el tamaño ni la orientación: basta medir un lado antes y después.</div></div></div><p>Reto: espaciar 5 estrellas en una cenefa con un mismo vector. <span class="timer" data-sec="900" title="Clic: iniciar / pausar">⏱ <span>15:00</span></span></p></section>
+<section class="slide" data-moment="cierre" data-title="Ticket de salida"><span class="tag">Cierre · Evaluación</span><h2>Ticket de salida (sin apuntes)</h2><div class="card good"><p>Resuelve el ticket de la ficha: trasladar el triángulo QRS, hallar un vector y validar una afirmación.</p><button class="btn" data-show="r23">Clave docente</button><div id="r23" class="hide ans">1) Q’(1; −3), R’(4; −3), S’(3; −1). 2) v = (−3; 4). 3) No: la traslación conserva las medidas (QR = Q’R’ = 3).</div></div><p><span class="timer" data-sec="360" title="Clic: iniciar / pausar">⏱ <span>6:00</span></span></p><p class="small">Autoevaluación con los criterios C1 – C4 en la ficha.</p></section>
+<section class="slide" data-moment="cierre" data-title="Metacognición y extensión"><span class="tag">Cierre · Metacognición</span><h2>Retomamos el mensajero</h2><div class="card acc"><p class="big">El mensaje mínimo era un vector: «9 a la derecha y 2 arriba» = <b>v = (9; 2)</b>.</p></div><ul class=""><li>¿Qué información necesita un vector para describir un movimiento?</li><li>¿Qué me ayudó más: la cuadrícula, la tabla o GeoGebra?</li><li>¿En qué criterio necesité ayuda y de quién?</li></ul><div class="card "><b>Extensión en familia:</b> diseñar una cenefa de al menos 4 figuras navideñas, indicar el vector usado y las coordenadas de la primera y la última figura.</div></section>
+</div>
+<div id="prog"></div>
+<nav id="menu"></nav>
+<div id="bar">
+  <button id="bMenu" title="Índice (M)">☰</button>
+  <button id="bPrev" title="Anterior (←)">◀</button>
+  <button id="bNext" title="Siguiente (→)">▶</button>
+  <span id="num"></span>
+  <span class="ttl" id="ttl"></span>
+  <button id="bTheme" title="Tema claro/oscuro">◐</button>
+  <button id="bFull" title="Pantalla completa (F)">⛶</button>
+</div>
+<script>
+/* ===== Motor de la presentación ===== */
+const GGB = {};          /* definiciones de applets GeoGebra: GGB[id] = {cmds:[], view:[xmin,xmax,ymin,ymax], after:fn, axes:true, grid:true} */
+const ON = {};           /* ON[slideId] = función que se ejecuta al entrar a la diapositiva */
+const API = {};          /* API[id] = applet GeoGebra cargado */
+const $ = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => [...r.querySelectorAll(s)];
+const fmt = (x, d=2) => (Math.round(x*10**d)/10**d + 0).toLocaleString('es-ES',{maximumFractionDigits:d,useGrouping:false});
+let slides = [], cur = 0;
+
+function show(i){
+  i = Math.max(0, Math.min(slides.length-1, i));
+  slides[cur] && slides[cur].classList.remove('active');
+  cur = i; const s = slides[cur]; s.classList.add('active');
+  $('#num').textContent = (cur+1) + ' / ' + slides.length;
+  $('#ttl').textContent = s.dataset.title || '';
+  $('#prog').style.width = ((cur+1)/slides.length*100) + '%';
+  $$('#menu a').forEach((a,k)=>a.classList.toggle('cur',k===cur));
+  try{ history.replaceState(null,'','#'+(cur+1)); }catch(e){}
+  $$('[data-ggb]', s).forEach(loadGGB);
+  if (s.id && ON[s.id]) { try{ ON[s.id](s); }catch(e){ console.error(e); } }
+  s.scrollTop = 0;
+}
+function buildMenu(){
+  const m = $('#menu'); let last = '';
+  const names = {portada:'Presentación', inicio:'Inicio', desarrollo:'Desarrollo', cierre:'Cierre'};
+  slides.forEach((s,k)=>{
+    const mo = s.dataset.moment || '';
+    if (mo !== last){ const d=document.createElement('div'); d.className='m'; d.textContent=names[mo]||mo; m.appendChild(d); last = mo; }
+    const a = document.createElement('a'); a.href = '#'+(k+1); a.textContent = (k+1)+'. '+(s.dataset.title||'');
+    a.onclick = e => { e.preventDefault(); show(k); m.classList.remove('open'); };
+    m.appendChild(a);
+  });
+}
+/* ---- botones "mostrar" ---- */
+document.addEventListener('click', e=>{
+  const b = e.target.closest('[data-show]');
+  if (b){ const t = document.getElementById(b.dataset.show); if(t){ t.classList.toggle('hide'); b.classList.toggle('solid'); } }
+  const tm = e.target.closest('.timer'); if (tm) toggleTimer(tm);
+});
+/* ---- temporizador ---- */
+function toggleTimer(el){
+  if (el._iv){ clearInterval(el._iv); el._iv=null; el.classList.remove('run'); return; }
+  if (el._left === undefined || el._left <= 0) el._left = +el.dataset.sec;
+  el.classList.add('run');
+  const draw = ()=>{ const m=Math.floor(el._left/60), s=el._left%60; el.querySelector('span').textContent = m+':'+String(s).padStart(2,'0'); };
+  draw();
+  el._iv = setInterval(()=>{ el._left--; draw(); if(el._left<=0){ clearInterval(el._iv); el._iv=null; el.classList.remove('run'); beep(); } },1000);
+}
+function beep(){ try{ const c=new (window.AudioContext||window.webkitAudioContext)(); const o=c.createOscillator(); const g=c.createGain();
+  o.connect(g); g.connect(c.destination); o.frequency.value=880; g.gain.value=.15; o.start(); setTimeout(()=>{o.stop(); c.close();},600);}catch(e){} }
+/* ---- GeoGebra ---- */
+let ggbState = 'none'; const ggbQueue = [];
+function loadGGBScript(){
+  if (ggbState !== 'none') return; ggbState = 'loading';
+  const sc = document.createElement('script'); sc.src = 'https://www.geogebra.org/apps/deployggb.js';
+  sc.onload = ()=>{ ggbState='ready'; ggbQueue.splice(0).forEach(injectGGB); };
+  sc.onerror = ()=>{ ggbState='fail'; ggbQueue.splice(0).forEach(failGGB); };
+  document.head.appendChild(sc);
+  setTimeout(()=>{ if(ggbState==='loading'){ ggbState='fail'; ggbQueue.splice(0).forEach(failGGB);} }, 20000);
+}
+function failGGB(el){ el.innerHTML = '<div class="msg">No se pudo cargar GeoGebra.<br>Este applet necesita conexión a internet.<br>Conéctate y recarga la página (F5).</div>'; }
+function loadGGB(el){
+  if (el.dataset.loaded) return; el.dataset.loaded = '1';
+  el.innerHTML = '<div class="msg">Cargando GeoGebra…</div>';
+  if (ggbState === 'ready') injectGGB(el); else if (ggbState === 'fail') failGGB(el); else { ggbQueue.push(el); loadGGBScript(); }
+}
+function injectGGB(el){
+  const id = el.dataset.ggb, def = GGB[id];
+  const box = document.createElement('div'); box.id = 'ggbx_'+id; el.innerHTML=''; el.appendChild(box);
+  const w = Math.max(300, el.clientWidth), h = Math.max(300, el.clientHeight);
+  const p = { appName:'classic', width:w, height:h, perspective:'G', showToolBar:false, showAlgebraInput:false, showMenuBar:false,
+    showResetIcon:false, enableShiftDragZoom:true, enableRightClick:false, enableLabelDrags:false, showZoomButtons:true,
+    language:'es', borderColor:'#ffffff', errorDialogsActive:false, useBrowserForJS:true,
+    appletOnLoad: api => {
+      API[id] = api;
+      api.setAxesVisible(def.axes!==false, def.axes!==false); api.setGridVisible(def.grid!==false);
+      (def.cmds||[]).forEach(c=>{ const ok = api.evalCommand(c); if(!ok) console.warn('GGB cmd falló:', id, c); });
+      if (def.view) api.setCoordSystem(...def.view);
+      if (def.fit){ /* encuadre con escala 1:1 */
+        const [x0,x1,y0,y1] = def.fit, s = Math.max((x1-x0)/w, (y1-y0)/h), cx=(x0+x1)/2, cy=(y0+y1)/2;
+        api.setCoordSystem(cx - s*w/2, cx + s*w/2, cy - s*h/2, cy + s*h/2); }
+      if (def.after) def.after(api);
+      el.dispatchEvent(new CustomEvent('ggbready',{detail:api}));
+    } };
+  const app = new GGBApplet(p, true);
+  if (window.GGB_CODEBASE) app.setHTML5Codebase(window.GGB_CODEBASE);
+  app.inject(box.id);
+}
+function ggbStyle(api, name, o){
+  if (!api.exists(name)) { console.warn('no existe', name); return; }
+  if (o.c) api.setColor(name, ...o.c);
+  if (o.t !== undefined) api.setLineThickness(name, o.t);
+  if (o.f !== undefined) api.setFilling(name, o.f);
+  if (o.ps !== undefined) api.setPointSize(name, o.ps);
+  if (o.lab !== undefined) api.setLabelVisible(name, o.lab);
+  if (o.cap !== undefined){ api.setCaption(name, o.cap); api.setLabelStyle(name, 3); api.setLabelVisible(name, true); }
+  if (o.fix) api.setFixed(name, true, false);
+  if (o.ls !== undefined) api.setLineStyle(name, o.ls);
+  if (o.vis !== undefined) api.setVisible(name, o.vis);
+}
+/* ---- arranque ---- */
+function boot(){
+  slides = $$('.slide'); buildMenu();
+  $('#bPrev').onclick = ()=>show(cur-1); $('#bNext').onclick = ()=>show(cur+1);
+  $('#bMenu').onclick = ()=>$('#menu').classList.toggle('open');
+  $('#bFull').onclick = full;
+  $('#bTheme').onclick = ()=>{ const r=document.documentElement; const d = r.dataset.theme==='dark' || (!r.dataset.theme && matchMedia('(prefers-color-scheme: dark)').matches);
+    r.dataset.theme = d ? 'light' : 'dark'; };
+  document.addEventListener('keydown', e=>{
+    if (e.target.matches('input,textarea,select')) return;
+    if (['ArrowRight','PageDown',' '].includes(e.key)){ e.preventDefault(); show(cur+1); }
+    else if (['ArrowLeft','PageUp'].includes(e.key)){ e.preventDefault(); show(cur-1); }
+    else if (e.key==='Home') show(0); else if (e.key==='End') show(slides.length-1);
+    else if (e.key==='f'||e.key==='F') full(); else if (e.key==='m'||e.key==='M') $('#menu').classList.toggle('open');
+  });
+  const h = parseInt((location.hash||'').slice(1)); show(isNaN(h)?0:h-1);
+}
+function full(){ if(!document.fullscreenElement) document.documentElement.requestFullscreen().catch(()=>{}); else document.exitFullscreen(); }
+</script>
+<script>
+
+/* ---- controles HTML enlazados a GeoGebra ---- */
+const VAL = {};
+function setOut(key, v){ $$('[data-out="'+key+'"]').forEach(o=>{ const u=o.dataset.unit||''; o.textContent = fmt(+v,2)+u; }); }
+document.addEventListener('input', e=>{
+  const el = e.target;
+  if (el.dataset.bind){ const [a,v]=el.dataset.bind.split(':'); VAL[a]=VAL[a]||{}; VAL[a][v]=+el.value;
+    setOut(el.dataset.bind, el.value); if(API[a]) API[a].setValue(v, +el.value); if(UPD[a]) UPD[a](VAL[a]); }
+  if (el.dataset.bindc){ const [a,v]=el.dataset.bindc.split(':'); VAL[a]=VAL[a]||{}; VAL[a][v]=el.checked?1:0;
+    if(API[a]) API[a].setValue(v, el.checked?1:0); if(UPD[a]) UPD[a](VAL[a]); }
+});
+const UPD = {};
+function initBinds(){
+  $$('[data-bind]').forEach(el=>{ const [a,v]=el.dataset.bind.split(':'); VAL[a]=VAL[a]||{}; VAL[a][v]=+el.value; setOut(el.dataset.bind, el.value); });
+  $$('[data-bindc]').forEach(el=>{ const [a,v]=el.dataset.bindc.split(':'); VAL[a]=VAL[a]||{}; VAL[a][v]=el.checked?1:0; });
+  Object.keys(UPD).forEach(a=>UPD[a](VAL[a]||{}));
+}
+document.addEventListener('ggbready', e=>{
+  const el = e.target, a = el.dataset.ggb, api = e.detail;
+  Object.entries(VAL[a]||{}).forEach(([v,x])=>{ if(api.exists(v)) api.setValue(v,x); });
+}, true);
+document.addEventListener('DOMContentLoaded', initBinds);
+
+/* ---- juego del mensajero ---- */
+const TREE=[[0,0],[2,0],[1,3]]; let tgt=[9,2], showT=true, tryP=null;
+function drawMsg(){
+  const svg=$('#msg'), s0=34, ox=40, oy=380; let s='';
+  for(let i=0;i<=16;i++) s+=`<line x1="${ox+i*s0}" y1="${oy-10*s0}" x2="${ox+i*s0}" y2="${oy}" stroke="#cfd6e4"/>`;
+  for(let j=0;j<=10;j++) s+=`<line x1="${ox}" y1="${oy-j*s0}" x2="${ox+16*s0}" y2="${oy-j*s0}" stroke="#cfd6e4"/>`;
+  const P=(dx,dy,c,o,lab)=>{ const pts=TREE.map(([x,y])=>`${ox+(x+1+dx)*s0},${oy-(y+1+dy)*s0}`).join(' ');
+    return `<polygon points="${pts}" fill="${c}" fill-opacity="${o}" stroke="${c}" stroke-width="3"/>`+(lab?`<text x="${ox+(1+dx)*s0}" y="${oy-(1+dy)*s0+22}" font-size="16" fill="${c}">${lab}</text>`:''); };
+  s+=P(0,0,'#0e8a6a',.55,'inicio');
+  if(showT) s+=P(tgt[0],tgt[1],'#c2410c',.35,'destino');
+  if(tryP) s+=P(tryP[0],tryP[1],'#1f5fbf',.25,'mensaje');
+  svg.innerHTML=s;
+}
+ON.sMsg = drawMsg;
+document.addEventListener('click', e=>{
+  if(e.target.id==='mNew'){ tgt=[Math.floor(Math.random()*12)-0, Math.floor(Math.random()*6)]; showT=true; tryP=null; drawMsg(); $('#mFb').textContent='Nueva posición. Escriban el mensaje.'; }
+  if(e.target.id==='mShow'){ showT=!showT; drawMsg(); }
+  if(e.target.id==='mTry'){ const a=+$('#mA').value, b=+$('#mB').value; tryP=[a,b]; showT=true; drawMsg();
+    $('#mFb').innerHTML = (a===tgt[0]&&b===tgt[1]) ? `<span class="ok">✓ ¡Llegó!</span> El mensaje equivale al vector (${a}; ${b}).`
+      : `<span class="no">✗ No coincide.</span> Faltó indicar ${a!==tgt[0]?'cuánto a los costados':''}${a!==tgt[0]&&b!==tgt[1]?' y ':''}${b!==tgt[1]?'cuánto arriba o abajo':''}.`; }
+});
+/* ---- GeoGebra: guirnalda ---- */
+GGB.tras = { fit:[-1,16,-1,11], cmds:['a=4','b=0','ver2=false','verW=false','A=(1,1)','B=(3,1)','C=(2,4)','arb=Polygon({A,B,C})',
+  'v=Vector((a,b))',"A'=Translate(A,v)","B'=Translate(B,v)","C'=Translate(C,v)","arb1=Polygon({A',B',C'})","vC=Vector(C,C')",
+  "A''=Translate(A',v)","B''=Translate(B',v)","C''=Translate(C',v)","arb2=Polygon({A'',B'',C''})",
+  'wv=Vector((2,5))','A_3=Translate(A,wv)','B_3=Translate(B,wv)','C_3=Translate(C,wv)','arbW=Polygon({A_3,B_3,C_3})','vW=Vector(C,C_3)'],
+  after: api=>{
+    ggbStyle(api,'arb',{c:[14,138,106],f:.5,t:4,lab:false}); ggbStyle(api,'arb1',{c:[194,65,12],f:.4,t:4,lab:false});
+    ggbStyle(api,'arb2',{c:[194,65,12],f:.25,t:3,lab:false}); ggbStyle(api,'arbW',{c:[124,58,237],f:.3,t:3,lab:false});
+    ggbStyle(api,'vC',{c:[31,95,191],t:6,lab:false}); ggbStyle(api,'vW',{c:[124,58,237],t:5,lab:false}); api.setVisible('v',false); api.setVisible('wv',false);
+    ['A','B','C',"A'","B'","C'"].forEach(p=>{ ggbStyle(api,p,{ps:5,fix:true}); api.setLabelStyle(p,1); api.setLabelVisible(p,true); });
+    ["A''","B''","C''",'A_3','B_3','C_3'].forEach(p=>{ ggbStyle(api,p,{ps:4,fix:true}); api.setLabelStyle(p,1); api.setLabelVisible(p,true); });
+    UPD.tras(VAL.tras||{});
+    api.getAllObjectNames('segment').forEach(n=>api.setLabelVisible(n,false));
+  }};
+UPD.tras = v => { const g=API.tras; if(g){ ["A''","B''","C''",'arb2'].forEach(n=>g.setVisible(n,!!v.ver2));
+    ['A_3','B_3','C_3','arbW','vW'].forEach(n=>g.setVisible(n,!!v.verW)); g.getAllObjectNames('segment').forEach(n=>g.setLabelVisible(n,false)); }
+  const a=v.a??4, b=v.b??0, P=[[1,1],[3,1],[2,4]], N=['A','B','C'];
+  let h='<tr><th>Vértice</th><th>Original</th><th>Imagen (x + a; y + b)</th></tr>';
+  P.forEach(([x,y],i)=> h+=`<tr><td>${N[i]}</td><td>(${x}; ${y})</td><td>${N[i]}’(${x+a}; ${y+b})</td></tr>`);
+  $('#trT').innerHTML = h + `<tr><td colspan="3">v = (${a}; ${b})</td></tr>`; };
+/* ---- GeoGebra: sucesivas ---- */
+GGB.suc = { fit:[-2,18,-6,10], cmds:['p=4','q=3','r=6','s=-2','P_1=(1,1)','P_2=(3,1)','P_3=(2,4)','f0=Polygon({P_1,P_2,P_3})',
+  'v=Vector((p,q))','w=Vector((r,s))','f1=Translate(f0,v)','f2=Translate(f1,w)',
+  'uv=Vector(P_3,P_3+(p,q))','uw=Vector(P_3+(p,q),P_3+(p+r,q+s))','us=Vector(P_3,P_3+(p+r,q+s))'],
+  after: api=>{ ggbStyle(api,'f0',{c:[14,138,106],f:.5,t:4,lab:false}); ggbStyle(api,'f1',{c:[194,65,12],f:.3,t:3,lab:false});
+    ggbStyle(api,'f2',{c:[124,58,237],f:.45,t:4,lab:false}); ggbStyle(api,'uv',{c:[194,65,12],t:5,lab:false});
+    ggbStyle(api,'uw',{c:[124,58,237],t:5,lab:false}); ggbStyle(api,'us',{c:[31,95,191],t:6,ls:1,lab:false});
+    ['v','w'].forEach(n=>api.setVisible(n,false)); ['P_1','P_2','P_3'].forEach(n=>ggbStyle(api,n,{ps:4,lab:false,fix:true}));
+    api.getAllObjectNames().forEach(n=>{ if(/^f[012]_/.test(n)||api.getObjectType(n)==='segment'||api.getObjectType(n)==='point'&&!/^P_/.test(n)) { api.setLabelVisible(n,false); if(api.getObjectType(n)==='point') api.setVisible(n,false);} }); }};
+UPD.suc = v => { const p=v.p??4,q=v.q??3,r=v.r??6,s=v.s??-2;
+  $('#sucOut').innerHTML = `v = (${p}; ${q}) · w = (${r}; ${s})<br>v + w = (<b>${p+r}</b>; <b>${q+s}</b>)`; };
+
+</script>
+<script>boot();</script>
+</body>
+</html>

@@ -1,0 +1,339 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>La guirnalda de luces del árbol navideño: razones trigonomét</title>
+<style>
+:root{
+  --bg:#f6f4ee; --paper:#ffffff; --ink:#1d2433; --muted:#5b6475; --line:#d9d4c7;
+  --acc:#1f5fbf; --acc2:#0e8a6a; --warn:#c2410c; --bad:#b42318; --good:#147a3d;
+  --ini:#c2410c; --des:#1f5fbf; --cie:#0e8a6a;
+  --hl:#fff3c4; --code:#f1efe8;
+  --fs: clamp(17px, 1.85vw, 32px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#14171d; --paper:#1d222b; --ink:#e9edf4; --muted:#a3acbb; --line:#323a47;
+    --acc:#6ea8ff; --acc2:#3ccf9f; --warn:#ff9a5c; --bad:#ff7b72; --good:#4ade80;
+    --ini:#ff9a5c; --des:#6ea8ff; --cie:#3ccf9f; --hl:#4a3f12; --code:#262c37;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#14171d; --paper:#1d222b; --ink:#e9edf4; --muted:#a3acbb; --line:#323a47;
+  --acc:#6ea8ff; --acc2:#3ccf9f; --warn:#ff9a5c; --bad:#ff7b72; --good:#4ade80;
+  --ini:#ff9a5c; --des:#6ea8ff; --cie:#3ccf9f; --hl:#4a3f12; --code:#262c37;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);
+  font-family:"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;font-size:var(--fs);line-height:1.35}
+body{overflow:hidden}
+#deck{position:fixed;inset:0 0 54px 0}
+.slide{position:absolute;inset:0;display:none;padding:2.2em 3.2em 1.2em;overflow:auto}
+.slide.active{display:flex;flex-direction:column;animation:fade .25s ease}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.tag{display:inline-flex;gap:.5em;align-items:center;font-size:.72em;font-weight:700;letter-spacing:.06em;
+  text-transform:uppercase;color:#fff;background:var(--des);border-radius:99px;padding:.18em .8em;align-self:flex-start}
+.slide[data-moment="inicio"] .tag{background:var(--ini)}
+.slide[data-moment="cierre"] .tag{background:var(--cie)}
+.slide[data-moment="portada"] .tag{background:var(--muted)}
+h1{font-size:2.1em;line-height:1.1;margin:.35em 0 .3em}
+h2{font-size:1.55em;line-height:1.15;margin:.35em 0 .45em}
+h3{font-size:1.1em;margin:.4em 0 .3em;color:var(--acc)}
+p{margin:.35em 0}
+ul,ol{margin:.3em 0 .3em 1.2em;padding:0}
+li{margin:.22em 0}
+.muted{color:var(--muted)}
+.small{font-size:.8em}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:1.2em;align-items:start}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:1em}
+.g-wide{display:grid;grid-template-columns:1.55fr 1fr;gap:1.2em;flex:1;min-height:0}
+.g-wide>div,.grid2.fill>div{min-height:0;display:flex;flex-direction:column}
+.grid2.fill{flex:1;min-height:0}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:.8em 1em}
+.card.acc{border-left:6px solid var(--acc)}
+.card.warn{border-left:6px solid var(--warn)}
+.card.good{border-left:6px solid var(--good)}
+.big{font-size:1.35em;font-weight:700}
+.formula{font-family:"Cambria Math","STIX Two Math","Times New Roman",serif;font-size:1.3em;background:var(--code);
+  border-radius:10px;padding:.25em .7em;display:inline-block;margin:.2em 0}
+mark{background:var(--hl);color:inherit;padding:0 .15em;border-radius:4px}
+.btn{font:inherit;font-size:.82em;border:1px solid var(--acc);color:var(--acc);background:transparent;border-radius:10px;
+  padding:.35em .85em;cursor:pointer;margin:.2em .3em .2em 0}
+.btn:hover{background:var(--acc);color:#fff}
+.btn.solid{background:var(--acc);color:#fff}
+.hide{display:none!important}
+.ans{border-left:5px solid var(--good);background:color-mix(in srgb,var(--good) 10%,transparent);
+  padding:.4em .8em;border-radius:8px;margin:.35em 0}
+.ok{color:var(--good);font-weight:700}.no{color:var(--bad);font-weight:700}
+table.t{border-collapse:collapse;margin:.3em 0;font-size:.92em}
+table.t th,table.t td{border:1px solid var(--line);padding:.22em .6em;text-align:center}
+table.t th{background:var(--code)}
+input[type=number],input[type=text]{font:inherit;font-size:.9em;width:5.2em;padding:.15em .35em;border:1px solid var(--line);
+  border-radius:8px;background:var(--paper);color:var(--ink);text-align:center}
+input[type=range]{width:100%;accent-color:var(--acc)}
+.ctrl{display:grid;grid-template-columns:auto 1fr 4.2em;gap:.4em .7em;align-items:center;margin:.3em 0}
+.ctrl b{font-variant-numeric:tabular-nums;text-align:right}
+.ggb{width:100%;flex:1;min-height:340px;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#fff;position:relative}
+.ggb .msg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:1em;color:#5b6475;font-size:.85em}
+.viz{width:100%;height:100%;min-height:300px}
+svg text{font-family:inherit}
+.timer{display:inline-flex;align-items:center;gap:.4em;font-variant-numeric:tabular-nums;font-weight:700;
+  border:2px solid var(--warn);color:var(--warn);border-radius:99px;padding:.1em .8em;cursor:pointer;user-select:none}
+.timer.run{background:var(--warn);color:#fff}
+.portada{justify-content:center}
+.portada .meta{display:grid;grid-template-columns:auto 1fr;gap:.25em 1em;font-size:.9em;margin-top:1em}
+.qlist li{margin:.45em 0}
+.pill{display:inline-block;border:1px solid var(--line);border-radius:99px;padding:.05em .6em;font-size:.8em;margin:.1em}
+.crit{display:grid;grid-template-columns:auto 1fr;gap:.2em .7em;font-size:.8em}
+.crit b{color:var(--acc)}
+/* barra inferior */
+#bar{position:fixed;left:0;right:0;bottom:0;height:54px;display:flex;align-items:center;gap:.6em;padding:0 1em;
+  background:var(--paper);border-top:1px solid var(--line);font-size:15px}
+#bar button{font:inherit;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:8px;height:36px;min-width:40px;cursor:pointer}
+#bar .ttl{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--muted)}
+#prog{position:fixed;left:0;bottom:54px;height:4px;background:var(--acc);transition:width .25s}
+#menu{position:fixed;left:0;top:0;bottom:54px;width:min(420px,92vw);background:var(--paper);border-right:1px solid var(--line);
+  overflow:auto;transform:translateX(-102%);transition:transform .2s;z-index:20;padding:1em;font-size:15px}
+#menu.open{transform:none}
+#menu a{display:block;padding:.35em .5em;border-radius:6px;color:var(--ink);text-decoration:none}
+#menu a:hover,#menu a.cur{background:var(--code)}
+#menu .m{font-weight:700;margin:.7em 0 .2em;color:var(--muted);text-transform:uppercase;font-size:.8em}
+@media (max-width:820px){
+  .slide{padding:1.4em 1.1em 1em}
+  .grid2,.g-wide,.grid3{grid-template-columns:1fr}
+  h1{font-size:1.6em}
+}
+@media print{body{overflow:visible}#bar,#prog,#menu{display:none}#deck{position:static}
+  .slide{display:flex!important;position:relative;page-break-after:always;min-height:100vh}}
+</style>
+</head>
+<body>
+<div id="deck">
+<section class="slide" data-moment="portada" data-title="Portada"><span class="tag">Sesión</span><div class="portada" style="display:flex;flex-direction:column;flex:1;justify-content:center"><div class="muted">Sesión 05 · UA8 · 5.° B · Matemática</div><h1>La guirnalda de luces del árbol navideño: razones trigonométricas de ángulos agudos</h1><div class="meta"><span class="muted">I. E.</span><span>San Juan Apóstol – Arequipa</span><span class="muted">Grado</span><span>5.° B (9:30 – 11:00)</span><span class="muted">Fecha</span><span>Jueves 19 de noviembre de 2026</span><span class="muted">Competencia</span><span>Resuelve problemas de forma, movimiento y localización</span><span class="muted">Practicante</span><span>Ever Wilson Bautista Huahuasoncco</span><span class="muted">Docente de aula</span><span>Prof. Nery Saico Gonzales</span></div><p class="small muted" style="margin-top:1.2em">Navega con ← → · F pantalla completa · M índice · ◐ tema</p></div></section>
+<section class="slide" data-moment="inicio" data-title="Experiencia de las guirnaldas" id="sGu"><span class="tag">Inicio · Motivación</span>
+<div class="g-wide"><div><svg id="gu" class="viz" viewBox="0 0 640 330"></svg></div><div>
+ <h3>¿Qué guirnalda está igual de inclinada?</h3>
+ <p>Cada equipo mide la altura (desde la estrella) y el cable, y calcula <b>altura ÷ cable</b>.</p>
+ <table class="t" id="guT"><tr><th>Guirnalda</th><th>Altura</th><th>Cable</th><th>Altura ÷ cable</th></tr></table>
+ <button class="btn solid" id="guGo">Calcular cocientes</button>
+ <div class="card" id="guFb" style="min-height:2.6em">¿Cuáles bajan con la misma inclinación?</div>
+</div></div></section>
+<section class="slide" data-moment="inicio" data-title="Diagnóstico"><span class="tag">Inicio · Saberes previos</span><h2>Diagnóstico individual</h2><ol class="qlist"><li>Halla la hipotenusa de un triángulo rectángulo de catetos 6 y 8.<br><button class="btn" data-show="r78">Respuesta esperada</button><div id="r78" class="hide ans">√(36 + 64) = 10</div></li><li>Simplifica 12/20.<br><button class="btn" data-show="r79">Respuesta esperada</button><div id="r79" class="hide ans">3/5</div></li></ol></section>
+<section class="slide" data-moment="inicio" data-title="Conflicto cognitivo"><span class="tag">Inicio · Conflicto cognitivo</span><h2>¿Tamaño o ángulo?</h2><div class="card warn"><p class="big">La guirnalda B tiene el doble de cable que la A, pero ambas dan <mark>0,6</mark>.</p><p>¿El cociente depende del tamaño o del ángulo? Si conocemos el ángulo y el largo del cable, ¿podríamos saber a qué altura está la estrella sin medirla?</p></div><p><span class="timer" data-sec="240" title="Clic: iniciar / pausar">⏱ <span>4:00</span> conjeturas</span></p></section>
+<section class="slide" data-moment="inicio" data-title="Propósito y criterios"><span class="tag">Inicio · Propósito</span><h2>Propósito de la sesión</h2><div class="card acc"><p style='font-size:1.12em;font-weight:600'>Estableceremos las razones trigonométricas de un ángulo agudo a partir de los lados de un triángulo rectángulo, midiendo con material concreto y GeoGebra, y las aplicaremos para calcular longitudes en la decoración navideña en familia.</p></div><h3>Criterios de evaluación</h3><div class="crit"><b>C1</b><span>Establece relaciones entre los lados de un triángulo rectángulo y sus ángulos agudos al modelar la decoración navideña.</span><b>C2</b><span>Expresa con lenguaje geométrico y notación (CO, CA, H; sen, cos, tan, cot, sec, csc) las razones de un ángulo agudo.</span><b>C3</b><span>Determina las seis razones trigonométricas a partir de los lados y calcula longitudes desconocidas.</span><b>C4</b><span>Justifica que las razones dependen solo del ángulo y valida afirmaciones con ejemplos y contraejemplos.</span></div><p class="small"><b>Evidencia:</b> Ficha de trabajo y cálculo de la guirnalda de luces del árbol navideño.</p><p class="muted small">Escribe tu meta en el cuaderno: «Hoy voy a aprender a…»</p></section>
+<section class="slide" data-moment="desarrollo" data-title="Situación problemática"><span class="tag">Desarrollo · Comprensión del problema</span><h2>La guirnalda de la familia Mamani</h2><div class="grid2"><div class="card acc"><p>La estrella del árbol está a <b>2,4 m</b> de altura y el cable de luces baja hasta una estaca a <b>1,8 m</b> del pie del árbol.</p><ol class=""><li>¿Cuánto mide el cable?</li><li>Las seis razones trigonométricas de α (ángulo en la estaca).</li><li>Para un árbol de 3,6 m con la misma inclinación, ¿a qué distancia va la estaca y cuánto cable se necesita?</li><li>¿Cambian las razones con el tamaño?</li></ol></div><div class="card "><h3>Pienso – me reúno – comparto</h3><ol class="qlist"><li>¿Qué figura forman el árbol, el piso y el cable?<br><button class="btn" data-show="r80">Respuesta esperada</button><div id="r80" class="hide ans">Un triángulo rectángulo: el ángulo recto está en el pie del árbol.</div></li><li>¿Cuál es el cateto opuesto a α? ¿Y el adyacente?<br><button class="btn" data-show="r81">Respuesta esperada</button><div id="r81" class="hide ans">Opuesto: la altura del árbol (2,4 m). Adyacente: la distancia a la estaca (1,8 m).</div></li></ol></div></div></section>
+<section class="slide" data-moment="desarrollo" data-title="GeoGebra: el cable de luces" id="sTrig"><span class="tag">Desarrollo · Búsqueda de estrategias</span><div class="g-wide"><div><div class="ggb" data-ggb="trig"></div></div><div><h3>El cable de luces (C1 · C3 · C4)</h3><div class="ctrl"><span>Ángulo α (°)</span><input type="range" data-bind="trig:al" min="10" max="80" step="0.01" value="53.13"><b data-out="trig:al">53.13</b></div><div class="ctrl"><span>Cable H (m)</span><input type="range" data-bind="trig:H" min="1" max="6" step="0.1" value="3"><b data-out="trig:H">3</b></div><p><label class="pill"><input type="checkbox" data-bindc="trig:ver2"> Árbol semejante (×1,5)</label> <button class="btn" id="tMam">Situación Mamani</button></p><table class="t" id="trT" style="font-variant-numeric:tabular-nums"></table><p class="small muted">Cambia el cable sin cambiar α: ¿cambian las razones?</p></div></div></section>
+<section class="slide" data-moment="desarrollo" data-title="Socialización"><span class="tag">Desarrollo · Socialización (C2 · C4)</span><h2>Socializamos estrategias</h2><div class="grid2"><div class="card acc"><h3>Estrategia 1 · Pitágoras + razones</h3><p>H = √(2,4² + 1,8²) = √9 = 3 m</p><p>sen α = 2,4/3 = 4/5 · cos α = 3/5 · tan α = 4/3</p></div><div class="card acc"><h3>Estrategia 2 · Semejanza</h3><p>3,6 m es 1,5 veces 2,4 m: estaca a 1,8 × 1,5 = 2,7 m y cable 3 × 1,5 = 4,5 m.</p></div></div><div class="card warn"><b>Error frecuente:</b> tomar 1,8/2,4 como seno. «Párate en la estaca y mira al árbol: ¿qué lado está frente a α?»</div></section>
+<section class="slide" data-moment="desarrollo" data-title="Formalización"><span class="tag">Desarrollo · Formalización</span><h2>Formalizamos</h2><div class="grid2"><div class="card acc"><table class="t"><tr><th>sen α = CO/H</th><th>cos α = CA/H</th><th>tan α = CO/CA</th></tr><tr><th>csc α = H/CO</th><th>sec α = H/CA</th><th>cot α = CA/CO</th></tr></table><ul class=""><li>Recíprocas: sen·csc = cos·sec = tan·cot = 1.</li><li>Co-razones: sen α = cos(90° − α).</li><li>0 &lt; sen α &lt; 1 y 0 &lt; cos α &lt; 1 en ángulos agudos.</li></ul></div><div class="card good"><h3>¿Por qué dependen solo del ángulo?</h3><p>Los triángulos rectángulos con el mismo ángulo agudo son <b>semejantes</b>: sus lados son proporcionales y los cocientes no cambian.</p><p>En las guirnaldas, altura ÷ cable = 0,6 era el <b>seno</b> de su ángulo de inclinación (≈ 37°). En la situación Mamani, sen α = 4/5 (α ≈ 53°).</p></div></div></section>
+<section class="slide" data-moment="desarrollo" data-title="Otros problemas" id="sCalc"><span class="tag">Desarrollo · Otros problemas</span>
+<div class="grid2"><div>
+ <h3>Calculadora de las seis razones</h3>
+ <p>Cateto opuesto <input type="number" id="kO" value="5" step="any"> Cateto adyacente <input type="number" id="kA" value="12" step="any">
+ <button class="btn solid" id="kGo">Calcular</button></p>
+ <div class="card" id="kOut" style="font-variant-numeric:tabular-nums"></div>
+</div><div id="probs" style="display:grid;grid-template-columns:1fr 1fr;gap:.5em;font-size:.85em"></div></div></section>
+<section class="slide" data-moment="cierre" data-title="Ticket de salida"><span class="tag">Cierre · Evaluación</span><h2>Ticket de salida (sin apuntes ni tabla de razones)</h2><div class="card good"><p>Resuelve el ticket de la ficha.</p><button class="btn" data-show="r82">Clave docente</button><div id="r82" class="hide ans">1) H = 15; sen = 3/5; cos = 4/5; tan = 3/4. 2) 10 · 0,6 = 6 m. 3) No: 9/15 = 3/5; son semejantes y las razones dependen solo del ángulo.</div></div><p><span class="timer" data-sec="360" title="Clic: iniciar / pausar">⏱ <span>6:00</span></span></p><p class="small">Autoevaluación con los criterios C1 – C4 en la ficha.</p></section>
+<section class="slide" data-moment="cierre" data-title="Metacognición y extensión"><span class="tag">Cierre · Metacognición</span><h2>Retomamos las guirnaldas</h2><div class="card acc"><p class="big">El cociente que se repetía no dependía del tamaño: era una <b>razón trigonométrica</b> del ángulo de inclinación.</p></div><ul class=""><li>¿Qué razón usaría para hallar la altura si conozco el cable y el ángulo?</li><li>¿Qué me ayudó más: medir, GeoGebra o la semejanza?</li></ul><div class="card "><b>Extensión en familia:</b> medir la altura de un adorno de la casa (nacimiento, árbol) y la distancia de su sombra o de un cordel; calcular sus razones.</div></section>
+</div>
+<div id="prog"></div>
+<nav id="menu"></nav>
+<div id="bar">
+  <button id="bMenu" title="Índice (M)">☰</button>
+  <button id="bPrev" title="Anterior (←)">◀</button>
+  <button id="bNext" title="Siguiente (→)">▶</button>
+  <span id="num"></span>
+  <span class="ttl" id="ttl"></span>
+  <button id="bTheme" title="Tema claro/oscuro">◐</button>
+  <button id="bFull" title="Pantalla completa (F)">⛶</button>
+</div>
+<script>
+/* ===== Motor de la presentación ===== */
+const GGB = {};          /* definiciones de applets GeoGebra: GGB[id] = {cmds:[], view:[xmin,xmax,ymin,ymax], after:fn, axes:true, grid:true} */
+const ON = {};           /* ON[slideId] = función que se ejecuta al entrar a la diapositiva */
+const API = {};          /* API[id] = applet GeoGebra cargado */
+const $ = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => [...r.querySelectorAll(s)];
+const fmt = (x, d=2) => (Math.round(x*10**d)/10**d + 0).toLocaleString('es-ES',{maximumFractionDigits:d,useGrouping:false});
+let slides = [], cur = 0;
+
+function show(i){
+  i = Math.max(0, Math.min(slides.length-1, i));
+  slides[cur] && slides[cur].classList.remove('active');
+  cur = i; const s = slides[cur]; s.classList.add('active');
+  $('#num').textContent = (cur+1) + ' / ' + slides.length;
+  $('#ttl').textContent = s.dataset.title || '';
+  $('#prog').style.width = ((cur+1)/slides.length*100) + '%';
+  $$('#menu a').forEach((a,k)=>a.classList.toggle('cur',k===cur));
+  try{ history.replaceState(null,'','#'+(cur+1)); }catch(e){}
+  $$('[data-ggb]', s).forEach(loadGGB);
+  if (s.id && ON[s.id]) { try{ ON[s.id](s); }catch(e){ console.error(e); } }
+  s.scrollTop = 0;
+}
+function buildMenu(){
+  const m = $('#menu'); let last = '';
+  const names = {portada:'Presentación', inicio:'Inicio', desarrollo:'Desarrollo', cierre:'Cierre'};
+  slides.forEach((s,k)=>{
+    const mo = s.dataset.moment || '';
+    if (mo !== last){ const d=document.createElement('div'); d.className='m'; d.textContent=names[mo]||mo; m.appendChild(d); last = mo; }
+    const a = document.createElement('a'); a.href = '#'+(k+1); a.textContent = (k+1)+'. '+(s.dataset.title||'');
+    a.onclick = e => { e.preventDefault(); show(k); m.classList.remove('open'); };
+    m.appendChild(a);
+  });
+}
+/* ---- botones "mostrar" ---- */
+document.addEventListener('click', e=>{
+  const b = e.target.closest('[data-show]');
+  if (b){ const t = document.getElementById(b.dataset.show); if(t){ t.classList.toggle('hide'); b.classList.toggle('solid'); } }
+  const tm = e.target.closest('.timer'); if (tm) toggleTimer(tm);
+});
+/* ---- temporizador ---- */
+function toggleTimer(el){
+  if (el._iv){ clearInterval(el._iv); el._iv=null; el.classList.remove('run'); return; }
+  if (el._left === undefined || el._left <= 0) el._left = +el.dataset.sec;
+  el.classList.add('run');
+  const draw = ()=>{ const m=Math.floor(el._left/60), s=el._left%60; el.querySelector('span').textContent = m+':'+String(s).padStart(2,'0'); };
+  draw();
+  el._iv = setInterval(()=>{ el._left--; draw(); if(el._left<=0){ clearInterval(el._iv); el._iv=null; el.classList.remove('run'); beep(); } },1000);
+}
+function beep(){ try{ const c=new (window.AudioContext||window.webkitAudioContext)(); const o=c.createOscillator(); const g=c.createGain();
+  o.connect(g); g.connect(c.destination); o.frequency.value=880; g.gain.value=.15; o.start(); setTimeout(()=>{o.stop(); c.close();},600);}catch(e){} }
+/* ---- GeoGebra ---- */
+let ggbState = 'none'; const ggbQueue = [];
+function loadGGBScript(){
+  if (ggbState !== 'none') return; ggbState = 'loading';
+  const sc = document.createElement('script'); sc.src = 'https://www.geogebra.org/apps/deployggb.js';
+  sc.onload = ()=>{ ggbState='ready'; ggbQueue.splice(0).forEach(injectGGB); };
+  sc.onerror = ()=>{ ggbState='fail'; ggbQueue.splice(0).forEach(failGGB); };
+  document.head.appendChild(sc);
+  setTimeout(()=>{ if(ggbState==='loading'){ ggbState='fail'; ggbQueue.splice(0).forEach(failGGB);} }, 20000);
+}
+function failGGB(el){ el.innerHTML = '<div class="msg">No se pudo cargar GeoGebra.<br>Este applet necesita conexión a internet.<br>Conéctate y recarga la página (F5).</div>'; }
+function loadGGB(el){
+  if (el.dataset.loaded) return; el.dataset.loaded = '1';
+  el.innerHTML = '<div class="msg">Cargando GeoGebra…</div>';
+  if (ggbState === 'ready') injectGGB(el); else if (ggbState === 'fail') failGGB(el); else { ggbQueue.push(el); loadGGBScript(); }
+}
+function injectGGB(el){
+  const id = el.dataset.ggb, def = GGB[id];
+  const box = document.createElement('div'); box.id = 'ggbx_'+id; el.innerHTML=''; el.appendChild(box);
+  const w = Math.max(300, el.clientWidth), h = Math.max(300, el.clientHeight);
+  const p = { appName:'classic', width:w, height:h, perspective:'G', showToolBar:false, showAlgebraInput:false, showMenuBar:false,
+    showResetIcon:false, enableShiftDragZoom:true, enableRightClick:false, enableLabelDrags:false, showZoomButtons:true,
+    language:'es', borderColor:'#ffffff', errorDialogsActive:false, useBrowserForJS:true,
+    appletOnLoad: api => {
+      API[id] = api;
+      api.setAxesVisible(def.axes!==false, def.axes!==false); api.setGridVisible(def.grid!==false);
+      (def.cmds||[]).forEach(c=>{ const ok = api.evalCommand(c); if(!ok) console.warn('GGB cmd falló:', id, c); });
+      if (def.view) api.setCoordSystem(...def.view);
+      if (def.fit){ /* encuadre con escala 1:1 */
+        const [x0,x1,y0,y1] = def.fit, s = Math.max((x1-x0)/w, (y1-y0)/h), cx=(x0+x1)/2, cy=(y0+y1)/2;
+        api.setCoordSystem(cx - s*w/2, cx + s*w/2, cy - s*h/2, cy + s*h/2); }
+      if (def.after) def.after(api);
+      el.dispatchEvent(new CustomEvent('ggbready',{detail:api}));
+    } };
+  const app = new GGBApplet(p, true);
+  if (window.GGB_CODEBASE) app.setHTML5Codebase(window.GGB_CODEBASE);
+  app.inject(box.id);
+}
+function ggbStyle(api, name, o){
+  if (!api.exists(name)) { console.warn('no existe', name); return; }
+  if (o.c) api.setColor(name, ...o.c);
+  if (o.t !== undefined) api.setLineThickness(name, o.t);
+  if (o.f !== undefined) api.setFilling(name, o.f);
+  if (o.ps !== undefined) api.setPointSize(name, o.ps);
+  if (o.lab !== undefined) api.setLabelVisible(name, o.lab);
+  if (o.cap !== undefined){ api.setCaption(name, o.cap); api.setLabelStyle(name, 3); api.setLabelVisible(name, true); }
+  if (o.fix) api.setFixed(name, true, false);
+  if (o.ls !== undefined) api.setLineStyle(name, o.ls);
+  if (o.vis !== undefined) api.setVisible(name, o.vis);
+}
+/* ---- arranque ---- */
+function boot(){
+  slides = $$('.slide'); buildMenu();
+  $('#bPrev').onclick = ()=>show(cur-1); $('#bNext').onclick = ()=>show(cur+1);
+  $('#bMenu').onclick = ()=>$('#menu').classList.toggle('open');
+  $('#bFull').onclick = full;
+  $('#bTheme').onclick = ()=>{ const r=document.documentElement; const d = r.dataset.theme==='dark' || (!r.dataset.theme && matchMedia('(prefers-color-scheme: dark)').matches);
+    r.dataset.theme = d ? 'light' : 'dark'; };
+  document.addEventListener('keydown', e=>{
+    if (e.target.matches('input,textarea,select')) return;
+    if (['ArrowRight','PageDown',' '].includes(e.key)){ e.preventDefault(); show(cur+1); }
+    else if (['ArrowLeft','PageUp'].includes(e.key)){ e.preventDefault(); show(cur-1); }
+    else if (e.key==='Home') show(0); else if (e.key==='End') show(slides.length-1);
+    else if (e.key==='f'||e.key==='F') full(); else if (e.key==='m'||e.key==='M') $('#menu').classList.toggle('open');
+  });
+  const h = parseInt((location.hash||'').slice(1)); show(isNaN(h)?0:h-1);
+}
+function full(){ if(!document.fullscreenElement) document.documentElement.requestFullscreen().catch(()=>{}); else document.exitFullscreen(); }
+</script>
+<script>
+
+/* ---- controles HTML enlazados a GeoGebra ---- */
+const VAL = {};
+function setOut(key, v){ $$('[data-out="'+key+'"]').forEach(o=>{ const u=o.dataset.unit||''; o.textContent = fmt(+v,2)+u; }); }
+document.addEventListener('input', e=>{
+  const el = e.target;
+  if (el.dataset.bind){ const [a,v]=el.dataset.bind.split(':'); VAL[a]=VAL[a]||{}; VAL[a][v]=+el.value;
+    setOut(el.dataset.bind, el.value); if(API[a]) API[a].setValue(v, +el.value); if(UPD[a]) UPD[a](VAL[a]); }
+  if (el.dataset.bindc){ const [a,v]=el.dataset.bindc.split(':'); VAL[a]=VAL[a]||{}; VAL[a][v]=el.checked?1:0;
+    if(API[a]) API[a].setValue(v, el.checked?1:0); if(UPD[a]) UPD[a](VAL[a]); }
+});
+const UPD = {};
+function initBinds(){
+  $$('[data-bind]').forEach(el=>{ const [a,v]=el.dataset.bind.split(':'); VAL[a]=VAL[a]||{}; VAL[a][v]=+el.value; setOut(el.dataset.bind, el.value); });
+  $$('[data-bindc]').forEach(el=>{ const [a,v]=el.dataset.bindc.split(':'); VAL[a]=VAL[a]||{}; VAL[a][v]=el.checked?1:0; });
+  Object.keys(UPD).forEach(a=>UPD[a](VAL[a]||{}));
+}
+document.addEventListener('ggbready', e=>{
+  const el = e.target, a = el.dataset.ggb, api = e.detail;
+  Object.entries(VAL[a]||{}).forEach(([v,x])=>{ if(api.exists(v)) api.setValue(v,x); });
+}, true);
+document.addEventListener('DOMContentLoaded', initBinds);
+
+const GU=[['A',3,5],['B',6,10],['C',4.5,7.5],['D',5,13]];
+function drawGu(){ const svg=$('#gu'); let s=''; const sc=17;
+  let xc=20; GU.forEach(([n,h,c],i)=>{ const b=Math.sqrt(c*c-h*h), x0=xc, y0=300; xc+=b*sc+26;
+    s+=`<polygon points="${x0},${y0} ${x0+b*sc},${y0} ${x0+b*sc},${y0-h*sc}" fill="#fde68a" stroke="#b45309" stroke-width="3"/>`
+     + `<text x="${x0+b*sc}" y="${y0-h*sc-8}" font-size="20" text-anchor="middle" fill="#d4a017">★</text>`
+     + `<text x="${x0+4}" y="${y0+24}" font-size="18" font-weight="700" fill="currentColor">${n}</text>`; });
+  svg.innerHTML=s;
+  const t=$('#guT'); if(t.rows.length===1) GU.forEach(([n,h,c])=>{ const r=t.insertRow(); r.innerHTML=`<td>${n}</td><td>${fmt(h)}</td><td>${fmt(c)}</td><td class="q">…</td>`; }); }
+ON.sGu = drawGu;
+document.addEventListener('click', e=>{
+  if(e.target.id==='guGo'){ $$('#guT .q').forEach((c,i)=>c.textContent=fmt(GU[i][1]/GU[i][2],2));
+    $('#guFb').innerHTML='A, B y C dan <b>0,6</b> aunque tienen distinto tamaño; D da 0,38: tiene otra inclinación.'; }
+  if(e.target.id==='tMam'){ const a=Math.atan(4/3)*180/Math.PI; setCtrl('trig','al',+a.toFixed(2)); setCtrl('trig','H',3); }
+  if(e.target.id==='kGo') six();
+});
+function setCtrl(app,v,x){ const el=$(`[data-bind="${app}:${v}"]`); el.value=x; el.dispatchEvent(new Event('input',{bubbles:true})); }
+GGB.trig = { fit:[-0.5,7.5,-0.5,5.6], cmds:['al=53','H=3','ver2=false','E=(0,0)','T=(H*cos(al°),0)','S=(H*cos(al°),H*sin(al°))','tri=Polygon({E,T,S})',
+  'hip=Segment(E,S)','op=Segment(T,S)','ad=Segment(E,T)','ang=Angle(T,E,S)','rt=Angle(S,T,E)',
+  'T_2=(1.5*H*cos(al°),0)','S_2=(1.5*H*cos(al°),1.5*H*sin(al°))','tri2=Polygon({E,T_2,S_2})'],
+  after: api=>{ ggbStyle(api,'tri',{c:[245,158,11],f:.25,t:1,lab:false}); ggbStyle(api,'tri2',{c:[124,58,237],f:.08,t:3,ls:1,lab:false});
+    ggbStyle(api,'hip',{c:[194,65,12],t:7}); ggbStyle(api,'op',{c:[14,138,106],t:9}); ggbStyle(api,'ad',{c:[31,95,191],t:7});
+    api.setCaption('hip','H = %v'); api.setCaption('op','CO = %v'); api.setCaption('ad','CA = %v');
+    ['hip','op','ad'].forEach(n=>{ api.setLabelStyle(n,3); api.setLabelVisible(n,true); });
+    ggbStyle(api,'ang',{c:[194,65,12]}); api.setLabelVisible('ang',true); ggbStyle(api,'rt',{c:[90,90,90],lab:false});
+    ['E','T','S','T_2','S_2'].forEach(n=>ggbStyle(api,n,{ps:5,lab:false,fix:true})); api.setColor('S',212,160,23); api.setPointSize('S',8);
+    api.setRounding('2'); UPD.trig(VAL.trig||{}); }};
+UPD.trig = v => { const al=v.al??53, H=v.H??3, r=al*Math.PI/180, co=H*Math.sin(r), ca=H*Math.cos(r);
+  if(API.trig){ ['tri2','T_2','S_2'].forEach(n=>API.trig.setVisible(n,!!v.ver2)); }
+  const R=[['sen α','CO/H',co/H],['cos α','CA/H',ca/H],['tan α','CO/CA',co/ca],['cot α','CA/CO',ca/co],['sec α','H/CA',H/ca],['csc α','H/CO',H/co]];
+  $('#trT').innerHTML = `<tr><th colspan="3">CO = ${fmt(co,3)} m · CA = ${fmt(ca,3)} m · H = ${fmt(H)} m</th></tr>`
+    + R.map(([n,f,x])=>`<tr><td><b>${n}</b></td><td>${f}</td><td>${fmt(x,4)}</td></tr>`).join(''); };
+function six(){ const o=+$('#kO').value, a=+$('#kA').value; if(!(o>0&&a>0)){ $('#kOut').textContent='Escribe catetos positivos.'; return; }
+  const h=Math.hypot(o,a);
+  $('#kOut').innerHTML = `H = √(${fmt(o)}² + ${fmt(a)}²) = <b>${fmt(h,4)}</b><br>sen = ${fmt(o/h,4)} · cos = ${fmt(a/h,4)} · tan = ${fmt(o/a,4)}<br>`
+    + `cot = ${fmt(a/o,4)} · sec = ${fmt(h/a,4)} · csc = ${fmt(h/o,4)}<br>α ≈ ${fmt(Math.atan(o/a)*180/Math.PI,2)}°`; }
+ON.sCalc = ()=>{ six(); const p=$('#probs'); if(p.children.length) return;
+  p.innerHTML = `<div class="card"><h3>P1 · Las seis razones (C3)</h3><p>Catetos 5 y 12.</p>${'<button class="btn" data-show="pk1">Mostrar respuesta</button><div id="pk1" class="hide ans">H = 13; sen θ = 5/13, cos θ = 12/13, tan θ = 5/12, cot θ = 12/5, sec θ = 13/12, csc θ = 13/5.</div>'}</div>
+  <div class="card"><h3>P2 · La escalera de la estrella (C1)</h3><p>Modela y halla los lados con la razón adecuada.</p></div>
+  <div class="card"><h3>P3 · La rampa del nacimiento (C2)</h3><p>Escribe las razones de A y B y relaciónalas (co-razones).</p></div>
+  <div class="card"><h3>P4 · ¿Verdadero o falso? (C4)</h3><p>«Si el triángulo es más grande, el seno es mayor».</p><button class="btn" data-show="pk4">Mostrar respuesta</button><div id="pk4" class="hide ans">Falso: con el mismo ángulo los triángulos son semejantes; el seno no cambia.</div></div>
+  <div class="card"><b>Reto:</b> si tan θ = 7/24, calcula sen θ + cos θ. <button class="btn" data-show="pk5">Ver</button><span id="pk5" class="hide ans">H = 25 → 7/25 + 24/25 = 31/25</span></div>`; };
+
+</script>
+<script>boot();</script>
+</body>
+</html>

@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Construyendo un ambiente confiable: la función cuadrática y </title>
+<style>
+:root{
+  --bg:#f6f4ee; --paper:#ffffff; --ink:#1d2433; --muted:#5b6475; --line:#d9d4c7;
+  --acc:#1f5fbf; --acc2:#0e8a6a; --warn:#c2410c; --bad:#b42318; --good:#147a3d;
+  --ini:#c2410c; --des:#1f5fbf; --cie:#0e8a6a;
+  --hl:#fff3c4; --code:#f1efe8;
+  --fs: clamp(17px, 1.85vw, 32px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#14171d; --paper:#1d222b; --ink:#e9edf4; --muted:#a3acbb; --line:#323a47;
+    --acc:#6ea8ff; --acc2:#3ccf9f; --warn:#ff9a5c; --bad:#ff7b72; --good:#4ade80;
+    --ini:#ff9a5c; --des:#6ea8ff; --cie:#3ccf9f; --hl:#4a3f12; --code:#262c37;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#14171d; --paper:#1d222b; --ink:#e9edf4; --muted:#a3acbb; --line:#323a47;
+  --acc:#6ea8ff; --acc2:#3ccf9f; --warn:#ff9a5c; --bad:#ff7b72; --good:#4ade80;
+  --ini:#ff9a5c; --des:#6ea8ff; --cie:#3ccf9f; --hl:#4a3f12; --code:#262c37;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);
+  font-family:"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;font-size:var(--fs);line-height:1.35}
+body{overflow:hidden}
+#deck{position:fixed;inset:0 0 54px 0}
+.slide{position:absolute;inset:0;display:none;padding:2.2em 3.2em 1.2em;overflow:auto}
+.slide.active{display:flex;flex-direction:column;animation:fade .25s ease}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.tag{display:inline-flex;gap:.5em;align-items:center;font-size:.72em;font-weight:700;letter-spacing:.06em;
+  text-transform:uppercase;color:#fff;background:var(--des);border-radius:99px;padding:.18em .8em;align-self:flex-start}
+.slide[data-moment="inicio"] .tag{background:var(--ini)}
+.slide[data-moment="cierre"] .tag{background:var(--cie)}
+.slide[data-moment="portada"] .tag{background:var(--muted)}
+h1{font-size:2.1em;line-height:1.1;margin:.35em 0 .3em}
+h2{font-size:1.55em;line-height:1.15;margin:.35em 0 .45em}
+h3{font-size:1.1em;margin:.4em 0 .3em;color:var(--acc)}
+p{margin:.35em 0}
+ul,ol{margin:.3em 0 .3em 1.2em;padding:0}
+li{margin:.22em 0}
+.muted{color:var(--muted)}
+.small{font-size:.8em}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:1.2em;align-items:start}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:1em}
+.g-wide{display:grid;grid-template-columns:1.55fr 1fr;gap:1.2em;flex:1;min-height:0}
+.g-wide>div,.grid2.fill>div{min-height:0;display:flex;flex-direction:column}
+.grid2.fill{flex:1;min-height:0}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:.8em 1em}
+.card.acc{border-left:6px solid var(--acc)}
+.card.warn{border-left:6px solid var(--warn)}
+.card.good{border-left:6px solid var(--good)}
+.big{font-size:1.35em;font-weight:700}
+.formula{font-family:"Cambria Math","STIX Two Math","Times New Roman",serif;font-size:1.3em;background:var(--code);
+  border-radius:10px;padding:.25em .7em;display:inline-block;margin:.2em 0}
+mark{background:var(--hl);color:inherit;padding:0 .15em;border-radius:4px}
+.btn{font:inherit;font-size:.82em;border:1px solid var(--acc);color:var(--acc);background:transparent;border-radius:10px;
+  padding:.35em .85em;cursor:pointer;margin:.2em .3em .2em 0}
+.btn:hover{background:var(--acc);color:#fff}
+.btn.solid{background:var(--acc);color:#fff}
+.hide{display:none!important}
+.ans{border-left:5px solid var(--good);background:color-mix(in srgb,var(--good) 10%,transparent);
+  padding:.4em .8em;border-radius:8px;margin:.35em 0}
+.ok{color:var(--good);font-weight:700}.no{color:var(--bad);font-weight:700}
+table.t{border-collapse:collapse;margin:.3em 0;font-size:.92em}
+table.t th,table.t td{border:1px solid var(--line);padding:.22em .6em;text-align:center}
+table.t th{background:var(--code)}
+input[type=number],input[type=text]{font:inherit;font-size:.9em;width:5.2em;padding:.15em .35em;border:1px solid var(--line);
+  border-radius:8px;background:var(--paper);color:var(--ink);text-align:center}
+input[type=range]{width:100%;accent-color:var(--acc)}
+.ctrl{display:grid;grid-template-columns:auto 1fr 4.2em;gap:.4em .7em;align-items:center;margin:.3em 0}
+.ctrl b{font-variant-numeric:tabular-nums;text-align:right}
+.ggb{width:100%;flex:1;min-height:340px;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#fff;position:relative}
+.ggb .msg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:1em;color:#5b6475;font-size:.85em}
+.viz{width:100%;height:100%;min-height:300px}
+svg text{font-family:inherit}
+.timer{display:inline-flex;align-items:center;gap:.4em;font-variant-numeric:tabular-nums;font-weight:700;
+  border:2px solid var(--warn);color:var(--warn);border-radius:99px;padding:.1em .8em;cursor:pointer;user-select:none}
+.timer.run{background:var(--warn);color:#fff}
+.portada{justify-content:center}
+.portada .meta{display:grid;grid-template-columns:auto 1fr;gap:.25em 1em;font-size:.9em;margin-top:1em}
+.qlist li{margin:.45em 0}
+.pill{display:inline-block;border:1px solid var(--line);border-radius:99px;padding:.05em .6em;font-size:.8em;margin:.1em}
+.crit{display:grid;grid-template-columns:auto 1fr;gap:.2em .7em;font-size:.8em}
+.crit b{color:var(--acc)}
+/* barra inferior */
+#bar{position:fixed;left:0;right:0;bottom:0;height:54px;display:flex;align-items:center;gap:.6em;padding:0 1em;
+  background:var(--paper);border-top:1px solid var(--line);font-size:15px}
+#bar button{font:inherit;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:8px;height:36px;min-width:40px;cursor:pointer}
+#bar .ttl{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--muted)}
+#prog{position:fixed;left:0;bottom:54px;height:4px;background:var(--acc);transition:width .25s}
+#menu{position:fixed;left:0;top:0;bottom:54px;width:min(420px,92vw);background:var(--paper);border-right:1px solid var(--line);
+  overflow:auto;transform:translateX(-102%);transition:transform .2s;z-index:20;padding:1em;font-size:15px}
+#menu.open{transform:none}
+#menu a{display:block;padding:.35em .5em;border-radius:6px;color:var(--ink);text-decoration:none}
+#menu a:hover,#menu a.cur{background:var(--code)}
+#menu .m{font-weight:700;margin:.7em 0 .2em;color:var(--muted);text-transform:uppercase;font-size:.8em}
+@media (max-width:820px){
+  .slide{padding:1.4em 1.1em 1em}
+  .grid2,.g-wide,.grid3{grid-template-columns:1fr}
+  h1{font-size:1.6em}
+}
+@media print{body{overflow:visible}#bar,#prog,#menu{display:none}#deck{position:static}
+  .slide{display:flex!important;position:relative;page-break-after:always;min-height:100vh}}
+</style>
+</head>
+<body>
+<div id="deck">
+<section class="slide" data-moment="portada" data-title="Portada"><span class="tag">Sesión</span><div class="portada" style="display:flex;flex-direction:column;flex:1;justify-content:center"><div class="muted">Sesión 03 · UA7 · 5.° B · Matemática</div><h1>Construyendo un ambiente confiable: la función cuadrática y su gráfica</h1><div class="meta"><span class="muted">I. E.</span><span>San Juan Apóstol – Arequipa</span><span class="muted">Grado</span><span>5.° B (9:30 – 11:00)</span><span class="muted">Fecha</span><span>Jueves 29 de octubre de 2026</span><span class="muted">Competencia</span><span>Resuelve problemas de regularidad, equivalencia y cambio</span><span class="muted">Practicante</span><span>Ever Wilson Bautista Huahuasoncco</span><span class="muted">Docente de aula</span><span>Prof. Nery Saico Gonzales</span></div><p class="small muted" style="margin-top:1.2em">Navega con ← → · F pantalla completa · M índice · ◐ tema</p></div></section>
+<section class="slide" data-moment="inicio" data-title="Experiencia de la pita"><span class="tag">Inicio · Motivación</span><h2>«Con la misma pita, ¿el mismo espacio?»</h2><div class="grid2"><div class="card acc"><p>Cada equipo forma con una pita de <b>40 cm</b> tres rectángulos distintos sobre papel cuadriculado y anota ancho, largo y área.</p><ul class=""><li><b>Constructor/a:</b> forma los rectángulos.</li><li><b>Calculador/a:</b> cuenta el área.</li><li><b>Registrador/a:</b> completa la tabla.</li><li><b>Vocero/a–verificador/a:</b> comprueba y comunica.</li></ul></div><div class="card warn"><h3>Antes de empezar</h3><p class="big">Si la pita es la misma, ¿todos los rectángulos tendrán la misma área?</p></div></div><p><span class="timer" data-sec="420" title="Clic: iniciar / pausar">⏱ <span>7:00</span> experiencia</span></p></section>
+<section class="slide" data-moment="inicio" data-title="La pita en GeoGebra" id="sPita"><span class="tag">Inicio · Motivación y saberes previos</span><div class="g-wide"><div><div class="ggb" data-ggb="pita"></div></div><div><h3>Con la misma pita de 40 cm…</h3><svg id="pitaR" viewBox="0 0 300 170" style="width:100%;max-height:24vh"></svg><div class="ctrl"><span>Ancho x (cm)</span><input type="range" data-bind="pita:x0" min="0" max="20" step="0.5" value="4"><b data-out="pita:x0">4</b></div><p><label class="pill"><input type="checkbox" data-bindc="pita:verT" checked> Puntos de la tabla</label><label class="pill"><input type="checkbox" data-bindc="pita:verF"> Curva A(x)</label><label class="pill"><input type="checkbox" data-bindc="pita:verV"> Vértice</label></p><div class="card" id="pitaOut" style="font-variant-numeric:tabular-nums"></div><button class="btn" data-show="r57">¿Qué expresión modela el área?</button><div id="r57" class="hide ans">Largo = 20 − x, así que <b>A(x) = x(20 − x) = −x² + 20x</b>. El máximo se da en x = 10: el cuadrado de 10 cm (100 cm²).</div></div></div></section>
+<section class="slide" data-moment="inicio" data-title="Diagnóstico y conflicto"><span class="tag">Inicio · Conflicto cognitivo</span><div class="grid2"><div class="card "><h3>Diagnóstico</h3><ol class="qlist"><li>Resuelve x² − 5x + 6 = 0.<br><button class="btn" data-show="r59">Respuesta esperada</button><div id="r59" class="hide ans">x = 2 o x = 3</div></li><li>Calcula x(20 − x) para x = 4.<br><button class="btn" data-show="r60">Respuesta esperada</button><div id="r60" class="hide ans">4 · 16 = 64: el área del rectángulo de 4 cm de ancho.</div></li></ol></div><div class="card warn"><h3>Conflicto cognitivo</h3><ul class=""><li>¿Por qué con la misma pita el área cambia?</li><li>¿Hay un rectángulo con el área más grande de todos?</li><li>¿Cómo estar seguros sin probar todos los anchos, incluidos los decimales?</li><li>¿Por qué los puntos no forman una recta?</li></ul></div></div><p><span class="timer" data-sec="180" title="Clic: iniciar / pausar">⏱ <span>3:00</span> conjeturas</span></p></section>
+<section class="slide" data-moment="inicio" data-title="Propósito y criterios"><span class="tag">Inicio · Propósito</span><h2>Propósito de la sesión</h2><div class="card acc"><p style='font-size:1.12em;font-weight:600'>Representaremos funciones cuadráticas en forma algebraica y gráfica, con GeoGebra, e interpretaremos su vértice, su valor máximo o mínimo y sus interceptos para diseñar el rincón de la honestidad y el periódico mural del salón.</p></div><h3>Criterios de evaluación</h3><div class="crit"><b>C1</b><span>Representa la función cuadrática en forma algebraica (expresión y tabla de valores) a partir de situaciones del salón.</span><b>C2</b><span>Grafica la parábola determinando correctamente el vértice, el eje de simetría y los interceptos con los ejes.</span><b>C3</b><span>Interpreta el valor máximo o mínimo en el contexto del diseño del periódico mural y del rincón de la honestidad.</span><b>C4</b><span>Justifica afirmaciones sobre el máximo o mínimo con ejemplos y contraejemplos, y cuida y comparte los materiales.</span></div><p class="small"><b>Evidencia:</b> Ficha de trabajo y diseño del rincón de la honestidad (con su gráfica en GeoGebra).</p><p class="muted small">Escribe tu meta en el cuaderno: «Hoy voy a aprender a…»</p></section>
+<section class="slide" data-moment="desarrollo" data-title="Situación problemática"><span class="tag">Desarrollo · Comprensión del problema</span><h2>El rincón de la honestidad</h2><div class="grid2"><div class="card acc"><p>Con <b>6 m de cinta</b> delimitaremos un rincón rectangular junto a la pared: la cinta va en <b>tres lados</b> y la pared cierra el cuarto.</p><p>¿Qué medidas debe tener el rincón para que su área sea la <b>máxima</b>?</p></div><div class="card "><h3>Comprendemos</h3><ol class="qlist"><li>Si x = 1 m, ¿cuánto mide el lado paralelo a la pared? ¿Y el área?<br><button class="btn" data-show="r61">Respuesta esperada</button><div id="r61" class="hide ans">6 − 2(1) = 4 m; área = 1 × 4 = 4 m².</div></li><li>¿Qué valores puede tomar x?<br><button class="btn" data-show="r62">Respuesta esperada</button><div id="r62" class="hide ans">0 &lt; x &lt; 3; con x = 3 no queda cinta para el lado paralelo.</div></li></ol></div></div></section>
+<section class="slide" data-moment="desarrollo" data-title="GeoGebra: el rincón" id="sRin"><span class="tag">Desarrollo · Búsqueda de estrategias</span><div class="g-wide"><div><div class="ggb" data-ggb="rin"></div></div><div><h3>El rincón de la honestidad (C1 · C3)</h3><svg id="rinR" viewBox="0 0 300 190" style="width:100%;max-height:26vh"></svg><div class="ctrl"><span>Fondo x (m)</span><input type="range" data-bind="rin:x0" min="0" max="3" step="0.05" value="1"><b data-out="rin:x0">1</b></div><div class="card" id="rinOut" style="font-variant-numeric:tabular-nums"></div><button class="btn" data-show="r58">Clave</button><div id="r58" class="hide ans">A(x) = x(6 − 2x) = −2x² + 6x. Vértice: x = −6/(2·(−2)) = 1,5 m → A = 4,5 m². El rincón mide 1,5 m de fondo y 3 m de largo.</div></div></div></section>
+<section class="slide" data-moment="desarrollo" data-title="Socialización"><span class="tag">Desarrollo · Socialización</span><h2>Socializamos nuestras representaciones</h2><div class="card acc"><ul class=""><li>Dos equipos con estrategias distintas (tabla y gráfica / expresión) explican su procedimiento.</li><li>¿Llegaron al mismo rincón? ¿Por qué el máximo no está en un extremo?</li><li>¿Qué información de GeoGebra fue más útil: la tabla, el punto móvil o el vértice?</li><li>Verificador: ¿las medidas usan exactamente los 6 m? ¿El área es mayor que con x = 1,4 y x = 1,6?</li></ul></div></section>
+<section class="slide" data-moment="desarrollo" data-title="Formalización: elementos" id="sExpl"><span class="tag">Desarrollo · Formalización</span><div class="g-wide"><div><div class="ggb" data-ggb="expl"></div></div><div><h3>Explorador f(x) = ax² + bx + c</h3><div class="ctrl"><span>a</span><input type="range" data-bind="expl:a" min="-3" max="3" step="0.5" value="-1"><b data-out="expl:a">-1</b></div><div class="ctrl"><span>b</span><input type="range" data-bind="expl:b" min="-8" max="8" step="1" value="4"><b data-out="expl:b">4</b></div><div class="ctrl"><span>c</span><input type="range" data-bind="expl:c" min="-6" max="6" step="1" value="0"><b data-out="expl:c">0</b></div><div class="card" id="explOut" style="font-variant-numeric:tabular-nums"></div><p class="small muted">¿Qué pasa si a = 0? ¿Y si a &gt; 0?</p></div></div></section>
+<section class="slide" data-moment="desarrollo" data-title="Formalización"><span class="tag">Desarrollo · Formalización</span><h2>Formalizamos</h2><div class="grid2"><div class="card acc"><p><b>Función cuadrática:</b> f(x) = ax² + bx + c, con a ≠ 0. Su gráfica es una <b>parábola</b>.</p><span class="formula">h = −b / (2a) · k = f(h) · V(h; k)</span><ul class=""><li>a &lt; 0: abre hacia abajo → <b>máximo</b>.</li><li>a &gt; 0: abre hacia arriba → <b>mínimo</b>.</li><li>Eje de simetría: x = h.</li><li>Ceros: f(x) = 0 · corte con el eje Y: (0; c).</li></ul></div><div class="card good"><h3>Volvemos al contexto</h3><p>Pita: A(x) = −x² + 20x → V(10; 100): el cuadrado de 10 cm.</p><p>Rincón: A(x) = −2x² + 6x → V(1,5; 4,5): 1,5 m de fondo y 3 m de largo.</p><p class="small">Solo tienen sentido los valores 0 &lt; x &lt; 3.</p></div></div></section>
+<section class="slide" data-moment="desarrollo" data-title="Otros problemas"><span class="tag">Desarrollo · Otros problemas</span><h2>Planteamiento de otros problemas</h2><div class="grid2"><div class="card "><h3>P1 · Panel del periódico mural</h3><p>A(x) = x(2,4 − x). ¿Qué medidas dan el área máxima?</p><button class="btn" data-show="r63">Mostrar respuesta</button><div id="r63" class="hide ans">h = 1,2: un cuadrado de 1,2 m de lado; área máxima 1,44 m².</div></div><div class="card "><h3>P2 · f(x) = x² − 6x + 8</h3><p>Tabla, vértice, eje e interceptos.</p><button class="btn" data-show="r64">Mostrar respuesta</button><div id="r64" class="hide ans">x = 1..5 → 3; 0; −1; 0; 3. V(3; −1), eje x = 3, cortes (2; 0), (4; 0) y (0; 8); mínimo −1.</div></div><div class="card "><h3>P3 · Producción de docenas (reto)</h3><button class="btn" data-show="r65">Mostrar respuesta</button><div id="r65" class="hide ans">h = 5: conviene producir 5 docenas, con un costo mínimo de S/ 15 por docena.</div></div><div class="card "><h3>P4 · ¿Verdadero o falso?</h3><p>Valida la afirmación con un ejemplo o contraejemplo.</p><button class="btn" data-show="r66">Mostrar respuesta</button><div id="r66" class="hide ans">Usa el explorador de GeoGebra para buscar el contraejemplo.</div></div></div><p><span class="timer" data-sec="720" title="Clic: iniciar / pausar">⏱ <span>12:00</span></span> <span class="small muted">Comprueben cada gráfica con el explorador.</span></p></section>
+<section class="slide" data-moment="cierre" data-title="Ticket de salida"><span class="tag">Cierre · Evaluación</span><h2>Ticket de salida (sin apuntes)</h2><div class="card good"><ol class=""><li>Halla el vértice de f(x) = −x² + 4x. ¿Es máximo o mínimo?</li><li>¿Dónde corta f al eje X?</li><li>«Toda parábola tiene un máximo». ¿Verdadero o falso? Justifica.</li></ol></div><button class="btn" data-show="r67">Clave docente</button><div id="r67" class="hide ans">1) V(2; 4), máximo (a = −1 &lt; 0). 2) (0; 0) y (4; 0). 3) Falso: si a &gt; 0 tiene mínimo, por ejemplo f(x) = x².</div><p><span class="timer" data-sec="360" title="Clic: iniciar / pausar">⏱ <span>6:00</span></span></p></section>
+<section class="slide" data-moment="cierre" data-title="Metacognición"><span class="tag">Cierre · Metacognición</span><h2>Retomamos la pita</h2><div class="card acc"><p class="big">El área sube, alcanza su máximo en el vértice y luego baja: el cuadrado de 10 cm encierra 100 cm².</p></div><ul class=""><li>¿Cómo sabemos que el vértice es el mejor diseño?</li><li>¿Qué representación me ayudó más: la tabla, la gráfica o la expresión?</li><li>¿Cómo cuidamos y compartimos los materiales del salón?</li></ul><div class="card "><b>Tarea N.° 07</b> en la ficha.</div></section>
+</div>
+<div id="prog"></div>
+<nav id="menu"></nav>
+<div id="bar">
+  <button id="bMenu" title="Índice (M)">☰</button>
+  <button id="bPrev" title="Anterior (←)">◀</button>
+  <button id="bNext" title="Siguiente (→)">▶</button>
+  <span id="num"></span>
+  <span class="ttl" id="ttl"></span>
+  <button id="bTheme" title="Tema claro/oscuro">◐</button>
+  <button id="bFull" title="Pantalla completa (F)">⛶</button>
+</div>
+<script>
+/* ===== Motor de la presentación ===== */
+const GGB = {};          /* definiciones de applets GeoGebra: GGB[id] = {cmds:[], view:[xmin,xmax,ymin,ymax], after:fn, axes:true, grid:true} */
+const ON = {};           /* ON[slideId] = función que se ejecuta al entrar a la diapositiva */
+const API = {};          /* API[id] = applet GeoGebra cargado */
+const $ = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => [...r.querySelectorAll(s)];
+const fmt = (x, d=2) => (Math.round(x*10**d)/10**d + 0).toLocaleString('es-ES',{maximumFractionDigits:d,useGrouping:false});
+let slides = [], cur = 0;
+
+function show(i){
+  i = Math.max(0, Math.min(slides.length-1, i));
+  slides[cur] && slides[cur].classList.remove('active');
+  cur = i; const s = slides[cur]; s.classList.add('active');
+  $('#num').textContent = (cur+1) + ' / ' + slides.length;
+  $('#ttl').textContent = s.dataset.title || '';
+  $('#prog').style.width = ((cur+1)/slides.length*100) + '%';
+  $$('#menu a').forEach((a,k)=>a.classList.toggle('cur',k===cur));
+  try{ history.replaceState(null,'','#'+(cur+1)); }catch(e){}
+  $$('[data-ggb]', s).forEach(loadGGB);
+  if (s.id && ON[s.id]) { try{ ON[s.id](s); }catch(e){ console.error(e); } }
+  s.scrollTop = 0;
+}
+function buildMenu(){
+  const m = $('#menu'); let last = '';
+  const names = {portada:'Presentación', inicio:'Inicio', desarrollo:'Desarrollo', cierre:'Cierre'};
+  slides.forEach((s,k)=>{
+    const mo = s.dataset.moment || '';
+    if (mo !== last){ const d=document.createElement('div'); d.className='m'; d.textContent=names[mo]||mo; m.appendChild(d); last = mo; }
+    const a = document.createElement('a'); a.href = '#'+(k+1); a.textContent = (k+1)+'. '+(s.dataset.title||'');
+    a.onclick = e => { e.preventDefault(); show(k); m.classList.remove('open'); };
+    m.appendChild(a);
+  });
+}
+/* ---- botones "mostrar" ---- */
+document.addEventListener('click', e=>{
+  const b = e.target.closest('[data-show]');
+  if (b){ const t = document.getElementById(b.dataset.show); if(t){ t.classList.toggle('hide'); b.classList.toggle('solid'); } }
+  const tm = e.target.closest('.timer'); if (tm) toggleTimer(tm);
+});
+/* ---- temporizador ---- */
+function toggleTimer(el){
+  if (el._iv){ clearInterval(el._iv); el._iv=null; el.classList.remove('run'); return; }
+  if (el._left === undefined || el._left <= 0) el._left = +el.dataset.sec;
+  el.classList.add('run');
+  const draw = ()=>{ const m=Math.floor(el._left/60), s=el._left%60; el.querySelector('span').textContent = m+':'+String(s).padStart(2,'0'); };
+  draw();
+  el._iv = setInterval(()=>{ el._left--; draw(); if(el._left<=0){ clearInterval(el._iv); el._iv=null; el.classList.remove('run'); beep(); } },1000);
+}
+function beep(){ try{ const c=new (window.AudioContext||window.webkitAudioContext)(); const o=c.createOscillator(); const g=c.createGain();
+  o.connect(g); g.connect(c.destination); o.frequency.value=880; g.gain.value=.15; o.start(); setTimeout(()=>{o.stop(); c.close();},600);}catch(e){} }
+/* ---- GeoGebra ---- */
+let ggbState = 'none'; const ggbQueue = [];
+function loadGGBScript(){
+  if (ggbState !== 'none') return; ggbState = 'loading';
+  const sc = document.createElement('script'); sc.src = 'https://www.geogebra.org/apps/deployggb.js';
+  sc.onload = ()=>{ ggbState='ready'; ggbQueue.splice(0).forEach(injectGGB); };
+  sc.onerror = ()=>{ ggbState='fail'; ggbQueue.splice(0).forEach(failGGB); };
+  document.head.appendChild(sc);
+  setTimeout(()=>{ if(ggbState==='loading'){ ggbState='fail'; ggbQueue.splice(0).forEach(failGGB);} }, 20000);
+}
+function failGGB(el){ el.innerHTML = '<div class="msg">No se pudo cargar GeoGebra.<br>Este applet necesita conexión a internet.<br>Conéctate y recarga la página (F5).</div>'; }
+function loadGGB(el){
+  if (el.dataset.loaded) return; el.dataset.loaded = '1';
+  el.innerHTML = '<div class="msg">Cargando GeoGebra…</div>';
+  if (ggbState === 'ready') injectGGB(el); else if (ggbState === 'fail') failGGB(el); else { ggbQueue.push(el); loadGGBScript(); }
+}
+function injectGGB(el){
+  const id = el.dataset.ggb, def = GGB[id];
+  const box = document.createElement('div'); box.id = 'ggbx_'+id; el.innerHTML=''; el.appendChild(box);
+  const w = Math.max(300, el.clientWidth), h = Math.max(300, el.clientHeight);
+  const p = { appName:'classic', width:w, height:h, perspective:'G', showToolBar:false, showAlgebraInput:false, showMenuBar:false,
+    showResetIcon:false, enableShiftDragZoom:true, enableRightClick:false, enableLabelDrags:false, showZoomButtons:true,
+    language:'es', borderColor:'#ffffff', errorDialogsActive:false, useBrowserForJS:true,
+    appletOnLoad: api => {
+      API[id] = api;
+      api.setAxesVisible(def.axes!==false, def.axes!==false); api.setGridVisible(def.grid!==false);
+      (def.cmds||[]).forEach(c=>{ const ok = api.evalCommand(c); if(!ok) console.warn('GGB cmd falló:', id, c); });
+      if (def.view) api.setCoordSystem(...def.view);
+      if (def.fit){ /* encuadre con escala 1:1 */
+        const [x0,x1,y0,y1] = def.fit, s = Math.max((x1-x0)/w, (y1-y0)/h), cx=(x0+x1)/2, cy=(y0+y1)/2;
+        api.setCoordSystem(cx - s*w/2, cx + s*w/2, cy - s*h/2, cy + s*h/2); }
+      if (def.after) def.after(api);
+      el.dispatchEvent(new CustomEvent('ggbready',{detail:api}));
+    } };
+  const app = new GGBApplet(p, true);
+  if (window.GGB_CODEBASE) app.setHTML5Codebase(window.GGB_CODEBASE);
+  app.inject(box.id);
+}
+function ggbStyle(api, name, o){
+  if (!api.exists(name)) { console.warn('no existe', name); return; }
+  if (o.c) api.setColor(name, ...o.c);
+  if (o.t !== undefined) api.setLineThickness(name, o.t);
+  if (o.f !== undefined) api.setFilling(name, o.f);
+  if (o.ps !== undefined) api.setPointSize(name, o.ps);
+  if (o.lab !== undefined) api.setLabelVisible(name, o.lab);
+  if (o.cap !== undefined){ api.setCaption(name, o.cap); api.setLabelStyle(name, 3); api.setLabelVisible(name, true); }
+  if (o.fix) api.setFixed(name, true, false);
+  if (o.ls !== undefined) api.setLineStyle(name, o.ls);
+  if (o.vis !== undefined) api.setVisible(name, o.vis);
+}
+/* ---- arranque ---- */
+function boot(){
+  slides = $$('.slide'); buildMenu();
+  $('#bPrev').onclick = ()=>show(cur-1); $('#bNext').onclick = ()=>show(cur+1);
+  $('#bMenu').onclick = ()=>$('#menu').classList.toggle('open');
+  $('#bFull').onclick = full;
+  $('#bTheme').onclick = ()=>{ const r=document.documentElement; const d = r.dataset.theme==='dark' || (!r.dataset.theme && matchMedia('(prefers-color-scheme: dark)').matches);
+    r.dataset.theme = d ? 'light' : 'dark'; };
+  document.addEventListener('keydown', e=>{
+    if (e.target.matches('input,textarea,select')) return;
+    if (['ArrowRight','PageDown',' '].includes(e.key)){ e.preventDefault(); show(cur+1); }
+    else if (['ArrowLeft','PageUp'].includes(e.key)){ e.preventDefault(); show(cur-1); }
+    else if (e.key==='Home') show(0); else if (e.key==='End') show(slides.length-1);
+    else if (e.key==='f'||e.key==='F') full(); else if (e.key==='m'||e.key==='M') $('#menu').classList.toggle('open');
+  });
+  const h = parseInt((location.hash||'').slice(1)); show(isNaN(h)?0:h-1);
+}
+function full(){ if(!document.fullscreenElement) document.documentElement.requestFullscreen().catch(()=>{}); else document.exitFullscreen(); }
+</script>
+<script>
+
+/* ---- controles HTML enlazados a GeoGebra ---- */
+const VAL = {};
+function setOut(key, v){ $$('[data-out="'+key+'"]').forEach(o=>{ const u=o.dataset.unit||''; o.textContent = fmt(+v,2)+u; }); }
+document.addEventListener('input', e=>{
+  const el = e.target;
+  if (el.dataset.bind){ const [a,v]=el.dataset.bind.split(':'); VAL[a]=VAL[a]||{}; VAL[a][v]=+el.value;
+    setOut(el.dataset.bind, el.value); if(API[a]) API[a].setValue(v, +el.value); if(UPD[a]) UPD[a](VAL[a]); }
+  if (el.dataset.bindc){ const [a,v]=el.dataset.bindc.split(':'); VAL[a]=VAL[a]||{}; VAL[a][v]=el.checked?1:0;
+    if(API[a]) API[a].setValue(v, el.checked?1:0); if(UPD[a]) UPD[a](VAL[a]); }
+});
+const UPD = {};
+function initBinds(){
+  $$('[data-bind]').forEach(el=>{ const [a,v]=el.dataset.bind.split(':'); VAL[a]=VAL[a]||{}; VAL[a][v]=+el.value; setOut(el.dataset.bind, el.value); });
+  $$('[data-bindc]').forEach(el=>{ const [a,v]=el.dataset.bindc.split(':'); VAL[a]=VAL[a]||{}; VAL[a][v]=el.checked?1:0; });
+  Object.keys(UPD).forEach(a=>UPD[a](VAL[a]||{}));
+}
+document.addEventListener('ggbready', e=>{
+  const el = e.target, a = el.dataset.ggb, api = e.detail;
+  Object.entries(VAL[a]||{}).forEach(([v,x])=>{ if(api.exists(v)) api.setValue(v,x); });
+}, true);
+document.addEventListener('DOMContentLoaded', initBinds);
+
+function rectSVG(svg, w, h, scale, labels, wall){
+  const W=300, H=+svg.getAttribute('viewBox').split(' ')[3], x0=(W-w*scale)/2, y0=(H-h*scale)/2+ (wall?10:0);
+  let s = wall ? `<line x1="10" y1="${y0}" x2="${W-10}" y2="${y0}" stroke="#7c5c3b" stroke-width="10"/><text x="12" y="${y0-10}" font-size="14" fill="currentColor">pared</text>` : '';
+  s += `<rect x="${x0}" y="${y0}" width="${Math.max(0,w*scale)}" height="${Math.max(0,h*scale)}" fill="#d4f3e6" stroke="#0e8a6a" stroke-width="${wall?0:4}"/>`;
+  if (wall) s += `<polyline points="${x0},${y0} ${x0},${y0+h*scale} ${x0+w*scale},${y0+h*scale} ${x0+w*scale},${y0}" fill="none" stroke="#c2410c" stroke-width="5"/>`;
+  s += `<text x="${W/2}" y="${y0+h*scale+20}" text-anchor="middle" font-size="16" fill="currentColor">${labels[0]}</text>`
+    + `<text x="${x0-6}" y="${y0+h*scale/2}" text-anchor="end" font-size="16" fill="currentColor">${labels[1]}</text>`;
+  svg.innerHTML = s;
+}
+/* pita */
+GGB.pita = { view:[-2,22,-14,118], cmds:['x0=4','verT=true','verF=false','verV=false','f(x)=If(0<=x<=20,x*(20-x))',
+  'P=(x0,f(x0))','sP=Segment((x0,0),P)','L={(0,0),(2,36),(4,64),(6,84),(8,96),(10,100),(12,96),(14,84),(16,64),(18,36),(20,0)}','V=(10,100)'],
+  after: api=>{ ggbStyle(api,'f',{c:[31,95,191],t:6}); ggbStyle(api,'P',{c:[194,65,12],ps:7}); api.setLabelStyle('P',1);
+    ggbStyle(api,'sP',{c:[194,65,12],t:3,ls:1,lab:false}); ggbStyle(api,'L',{c:[14,138,106],ps:5,lab:false});
+    ggbStyle(api,'V',{c:[124,58,237],ps:8}); api.setLabelStyle('V',1); api.setLabelVisible('f',false);
+    api.evalCommand('ShowAxes(true)'); UPD.pita(VAL.pita||{}); }};
+UPD.pita = v => { const x=v.x0??4, A=x*(20-x), g=API.pita; if(g){ g.setVisible('L',!!(v.verT??1)); g.setVisible('f',!!v.verF); g.setVisible('V',!!v.verV); }
+  rectSVG($('#pitaR'), 20-x, x, 6.5, [`largo ${fmt(20-x)} cm`, `ancho ${fmt(x)}`]);
+  $('#pitaOut').innerHTML = `Perímetro: 2(${fmt(x)} + ${fmt(20-x)}) = 40 cm<br>Área = ${fmt(x)} × ${fmt(20-x)} = <b>${fmt(A)} cm²</b>`; };
+/* rincón */
+GGB.rin = { view:[-0.3,3.3,-0.7,5.6], cmds:['x0=1','f(x)=If(0<=x<=3,-2x^2+6x)','P=(x0,f(x0))','sP=Segment((x0,0),P)','V=(1.5,4.5)'],
+  after: api=>{ ggbStyle(api,'f',{c:[31,95,191],t:6}); api.setLabelVisible('f',false); ggbStyle(api,'P',{c:[194,65,12],ps:7}); api.setLabelStyle('P',1);
+    ggbStyle(api,'sP',{c:[194,65,12],t:3,ls:1,lab:false}); ggbStyle(api,'V',{c:[124,58,237],ps:7}); api.setLabelStyle('V',1); api.setTrace('P',true); }};
+UPD.rin = v => { const x=v.x0??1, l=6-2*x, A=x*l;
+  rectSVG($('#rinR'), l, x, 45, [`paralelo a la pared: ${fmt(l)} m`, `fondo ${fmt(x)} m`], true);
+  $('#rinOut').innerHTML = `Cinta: ${fmt(x)} + ${fmt(x)} + ${fmt(l)} = 6 m<br>A(${fmt(x)}) = ${fmt(x)} · ${fmt(l)} = <b>${fmt(A,4)} m²</b> `
+    + (Math.abs(x-1.5)<1e-9?'<span class="ok">✓ ¡Área máxima!</span>':''); };
+/* explorador */
+GGB.expl = { fit:[-8,8,-8,8], cmds:['a=-1','b=4','c=0','f(x)=a*x^2+b*x+c','Dd=b^2-4*a*c','V=If(a!=0,(-b/(2a),f(-b/(2a))))',
+  'eje=Line(V,V+(0,1))','R_1=If(a!=0 && Dd>=0,((-b-sqrt(Dd))/(2a),0))','R_2=If(a!=0 && Dd>0,((-b+sqrt(Dd))/(2a),0))','Y=(0,c)'],
+  after: api=>{ ggbStyle(api,'f',{c:[31,95,191],t:6,lab:false}); ggbStyle(api,'V',{c:[124,58,237],ps:7}); api.setLabelStyle('V',1);
+    ggbStyle(api,'eje',{c:[124,58,237],t:2,ls:1,lab:false}); ['R_1','R_2','Y'].forEach(n=>{ ggbStyle(api,n,{c:[194,65,12],ps:6}); api.setLabelStyle(n,1); }); }};
+UPD.expl = v => { const a=v.a??-1, b=v.b??4, c=v.c??0; let s=`f(x) = ${fmt(a)}x² ${b<0?'−':'+'} ${fmt(Math.abs(b))}x ${c<0?'−':'+'} ${fmt(Math.abs(c))}<br>`;
+  if (a===0){ $('#explOut').innerHTML = s+'<span class="no">a = 0: no es cuadrática (es una recta).</span>'; return; }
+  const h=-b/(2*a), k=a*h*h+b*h+c, D=b*b-4*a*c;
+  s += `Vértice V(${fmt(h)}; ${fmt(k)}) → <b>${a<0?'máximo':'mínimo'}</b> ${fmt(k)}<br>Eje: x = ${fmt(h)} · Δ = ${fmt(D)}<br>`;
+  s += D<0 ? 'No corta al eje X' : D===0 ? `Corta al eje X en (${fmt(h)}; 0)` : `Ceros: x = ${fmt((-b-Math.sqrt(D))/(2*a))} y x = ${fmt((-b+Math.sqrt(D))/(2*a))}`;
+  $('#explOut').innerHTML = s + `<br>Corte con el eje Y: (0; ${fmt(c)})`; };
+
+</script>
+<script>boot();</script>
+</body>
+</html>

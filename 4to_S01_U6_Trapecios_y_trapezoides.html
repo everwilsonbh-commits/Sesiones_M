@@ -1,0 +1,385 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Diseño de soportes colapsables y geometría de trapecios y tr</title>
+<style>
+:root{
+  --bg:#f6f4ee; --paper:#ffffff; --ink:#1d2433; --muted:#5b6475; --line:#d9d4c7;
+  --acc:#1f5fbf; --acc2:#0e8a6a; --warn:#c2410c; --bad:#b42318; --good:#147a3d;
+  --ini:#c2410c; --des:#1f5fbf; --cie:#0e8a6a;
+  --hl:#fff3c4; --code:#f1efe8;
+  --fs: clamp(17px, 1.85vw, 32px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#14171d; --paper:#1d222b; --ink:#e9edf4; --muted:#a3acbb; --line:#323a47;
+    --acc:#6ea8ff; --acc2:#3ccf9f; --warn:#ff9a5c; --bad:#ff7b72; --good:#4ade80;
+    --ini:#ff9a5c; --des:#6ea8ff; --cie:#3ccf9f; --hl:#4a3f12; --code:#262c37;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#14171d; --paper:#1d222b; --ink:#e9edf4; --muted:#a3acbb; --line:#323a47;
+  --acc:#6ea8ff; --acc2:#3ccf9f; --warn:#ff9a5c; --bad:#ff7b72; --good:#4ade80;
+  --ini:#ff9a5c; --des:#6ea8ff; --cie:#3ccf9f; --hl:#4a3f12; --code:#262c37;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);
+  font-family:"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;font-size:var(--fs);line-height:1.35}
+body{overflow:hidden}
+#deck{position:fixed;inset:0 0 54px 0}
+.slide{position:absolute;inset:0;display:none;padding:2.2em 3.2em 1.2em;overflow:auto}
+.slide.active{display:flex;flex-direction:column;animation:fade .25s ease}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.tag{display:inline-flex;gap:.5em;align-items:center;font-size:.72em;font-weight:700;letter-spacing:.06em;
+  text-transform:uppercase;color:#fff;background:var(--des);border-radius:99px;padding:.18em .8em;align-self:flex-start}
+.slide[data-moment="inicio"] .tag{background:var(--ini)}
+.slide[data-moment="cierre"] .tag{background:var(--cie)}
+.slide[data-moment="portada"] .tag{background:var(--muted)}
+h1{font-size:2.1em;line-height:1.1;margin:.35em 0 .3em}
+h2{font-size:1.55em;line-height:1.15;margin:.35em 0 .45em}
+h3{font-size:1.1em;margin:.4em 0 .3em;color:var(--acc)}
+p{margin:.35em 0}
+ul,ol{margin:.3em 0 .3em 1.2em;padding:0}
+li{margin:.22em 0}
+.muted{color:var(--muted)}
+.small{font-size:.8em}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:1.2em;align-items:start}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:1em}
+.g-wide{display:grid;grid-template-columns:1.55fr 1fr;gap:1.2em;flex:1;min-height:0}
+.g-wide>div,.grid2.fill>div{min-height:0;display:flex;flex-direction:column}
+.grid2.fill{flex:1;min-height:0}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:.8em 1em}
+.card.acc{border-left:6px solid var(--acc)}
+.card.warn{border-left:6px solid var(--warn)}
+.card.good{border-left:6px solid var(--good)}
+.big{font-size:1.35em;font-weight:700}
+.formula{font-family:"Cambria Math","STIX Two Math","Times New Roman",serif;font-size:1.3em;background:var(--code);
+  border-radius:10px;padding:.25em .7em;display:inline-block;margin:.2em 0}
+mark{background:var(--hl);color:inherit;padding:0 .15em;border-radius:4px}
+.btn{font:inherit;font-size:.82em;border:1px solid var(--acc);color:var(--acc);background:transparent;border-radius:10px;
+  padding:.35em .85em;cursor:pointer;margin:.2em .3em .2em 0}
+.btn:hover{background:var(--acc);color:#fff}
+.btn.solid{background:var(--acc);color:#fff}
+.hide{display:none!important}
+.ans{border-left:5px solid var(--good);background:color-mix(in srgb,var(--good) 10%,transparent);
+  padding:.4em .8em;border-radius:8px;margin:.35em 0}
+.ok{color:var(--good);font-weight:700}.no{color:var(--bad);font-weight:700}
+table.t{border-collapse:collapse;margin:.3em 0;font-size:.92em}
+table.t th,table.t td{border:1px solid var(--line);padding:.22em .6em;text-align:center}
+table.t th{background:var(--code)}
+input[type=number],input[type=text]{font:inherit;font-size:.9em;width:5.2em;padding:.15em .35em;border:1px solid var(--line);
+  border-radius:8px;background:var(--paper);color:var(--ink);text-align:center}
+input[type=range]{width:100%;accent-color:var(--acc)}
+.ctrl{display:grid;grid-template-columns:auto 1fr 4.2em;gap:.4em .7em;align-items:center;margin:.3em 0}
+.ctrl b{font-variant-numeric:tabular-nums;text-align:right}
+.ggb{width:100%;flex:1;min-height:340px;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#fff;position:relative}
+.ggb .msg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:1em;color:#5b6475;font-size:.85em}
+.viz{width:100%;height:100%;min-height:300px}
+svg text{font-family:inherit}
+.timer{display:inline-flex;align-items:center;gap:.4em;font-variant-numeric:tabular-nums;font-weight:700;
+  border:2px solid var(--warn);color:var(--warn);border-radius:99px;padding:.1em .8em;cursor:pointer;user-select:none}
+.timer.run{background:var(--warn);color:#fff}
+.portada{justify-content:center}
+.portada .meta{display:grid;grid-template-columns:auto 1fr;gap:.25em 1em;font-size:.9em;margin-top:1em}
+.qlist li{margin:.45em 0}
+.pill{display:inline-block;border:1px solid var(--line);border-radius:99px;padding:.05em .6em;font-size:.8em;margin:.1em}
+.crit{display:grid;grid-template-columns:auto 1fr;gap:.2em .7em;font-size:.8em}
+.crit b{color:var(--acc)}
+/* barra inferior */
+#bar{position:fixed;left:0;right:0;bottom:0;height:54px;display:flex;align-items:center;gap:.6em;padding:0 1em;
+  background:var(--paper);border-top:1px solid var(--line);font-size:15px}
+#bar button{font:inherit;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:8px;height:36px;min-width:40px;cursor:pointer}
+#bar .ttl{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--muted)}
+#prog{position:fixed;left:0;bottom:54px;height:4px;background:var(--acc);transition:width .25s}
+#menu{position:fixed;left:0;top:0;bottom:54px;width:min(420px,92vw);background:var(--paper);border-right:1px solid var(--line);
+  overflow:auto;transform:translateX(-102%);transition:transform .2s;z-index:20;padding:1em;font-size:15px}
+#menu.open{transform:none}
+#menu a{display:block;padding:.35em .5em;border-radius:6px;color:var(--ink);text-decoration:none}
+#menu a:hover,#menu a.cur{background:var(--code)}
+#menu .m{font-weight:700;margin:.7em 0 .2em;color:var(--muted);text-transform:uppercase;font-size:.8em}
+@media (max-width:820px){
+  .slide{padding:1.4em 1.1em 1em}
+  .grid2,.g-wide,.grid3{grid-template-columns:1fr}
+  h1{font-size:1.6em}
+}
+@media print{body{overflow:visible}#bar,#prog,#menu{display:none}#deck{position:static}
+  .slide{display:flex!important;position:relative;page-break-after:always;min-height:100vh}}
+</style>
+</head>
+<body>
+<div id="deck">
+<section class="slide" data-moment="portada" data-title="Portada"><span class="tag">Sesión</span><div class="portada" style="display:flex;flex-direction:column;flex:1;justify-content:center"><div class="muted">Sesión 01 · UA6 · 4.° A y B · Matemática</div><h1>Diseño de soportes colapsables y geometría de trapecios y trapezoides con papiroflexia</h1><div class="meta"><span class="muted">I. E.</span><span>San Juan Apóstol – Arequipa</span><span class="muted">Grado</span><span>4.° A (8:00 – 9:30) y 4.° B (11:30 – 1:00)</span><span class="muted">Fecha</span><span>Jueves 24 de septiembre de 2026</span><span class="muted">Competencia</span><span>Resuelve problemas de forma, movimiento y localización</span><span class="muted">Practicante</span><span>Ever Wilson Bautista Huahuasoncco</span><span class="muted">Docente de aula</span><span>Prof. Nery Saico Gonzales</span></div><p class="small muted" style="margin-top:1.2em">Navega con ← → · F pantalla completa · M índice · ◐ tema</p></div></section>
+<section class="slide" data-moment="inicio" data-title="Motivación: dos soportes" id="sLoad"><span class="tag">Inicio · Motivación</span><h2>Dos soportes de papel, una misma carga</h2>
+<div class="grid2" style="flex:1;min-height:0">
+ <svg id="stand" viewBox="0 0 640 330" class="viz" style="max-height:55vh">
+  <g id="st1" transform="translate(70,40)"><rect id="st1r" x="0" y="60" width="200" height="180" fill="#dbe7fb" stroke="#1f5fbf" stroke-width="4"/>
+   <text x="100" y="275" text-anchor="middle" font-size="20" fill="currentColor">Caras rectangulares</text></g>
+  <g id="st2" transform="translate(360,40)"><polygon points="20,240 220,240 165,60 75,60" fill="#d4f3e6" stroke="#0e8a6a" stroke-width="4"/>
+   <text x="120" y="275" text-anchor="middle" font-size="20" fill="currentColor">Caras trapezoidales</text></g>
+  <g id="books"><rect x="80" y="70" width="180" height="26" rx="4" fill="#c2410c"/><rect x="385" y="70" width="180" height="26" rx="4" fill="#c2410c"/></g>
+ </svg>
+ <div>
+  <h3>¿Por qué el primer soporte se dobla y el segundo no?</h3>
+  <button class="btn solid" id="bLoad">Poner un cuaderno encima</button> <button class="btn" id="bReset">Reiniciar</button>
+  <ul class="qlist"><li>¿Qué forma tienen las caras laterales de cada soporte?</li>
+  <li>¿Qué tienen de especial los lados inclinados?</li>
+  <li>¿Cuál conviene para el exhibidor de la feria?</li></ul>
+ </div>
+</div></section>
+<section class="slide" data-moment="inicio" data-title="Saberes previos"><span class="tag">Inicio · Saberes previos</span><h2>Recordemos</h2><ol class="qlist"><li>Si en un cuadrilátero solo un par de lados opuestos es paralelo, ¿cómo se llama?<br><button class="btn" data-show="r1">Respuesta esperada</button><div id="r1" class="hide ans">Es un <b>trapecio</b>; los lados paralelos son sus <b>bases</b>.</div></li><li>¿Cómo calculamos el área de un rectángulo y de un triángulo?<br><button class="btn" data-show="r2">Respuesta esperada</button><div id="r2" class="hide ans">Rectángulo: base × altura. Triángulo: (base × altura) / 2.</div></li><li>Si doblamos la base mayor sobre la base menor, ¿dónde queda el pliegue y qué relación parece tener con las bases?<br><button class="btn" data-show="r3">Respuesta esperada</button><div id="r3" class="hide ans">El pliegue queda a media altura y parece medir “algo entre” las dos bases. ¡Lo comprobaremos!</div></li></ol></section>
+<section class="slide" data-moment="inicio" data-title="Clasificamos cuadriláteros" id="sCls"><span class="tag">Inicio · Saberes previos (C1)</span><h2>¿Trapecio o trapezoide?</h2>
+<div class="grid2" style="flex:1;min-height:0">
+ <div>
+  <p>Toca una figura y luego su clasificación. Justifica en voz alta: <i>¿cuántos pares de lados paralelos tiene?</i></p>
+  <svg id="cls" viewBox="0 0 600 330" class="viz" style="max-height:52vh"></svg>
+ </div>
+ <div>
+  <div id="clsBtns"></div>
+  <div id="clsFb" class="card" style="margin-top:.6em;min-height:3.2em">Selecciona una figura.</div>
+  <p class="small muted">Aciertos: <b id="clsOk">0</b> / 6</p>
+ </div>
+</div></section>
+<section class="slide" data-moment="inicio" data-title="Conflicto cognitivo"><span class="tag">Inicio · Conflicto cognitivo</span><h2>El cartel del exhibidor</h2><div class="card warn"><p class="big">La cara frontal es un <mark>trapecio isósceles</mark> de bases <b>24 cm</b> y <b>12 cm</b>, y debe tener exactamente <b>180 cm²</b> de área.</p><p>¿Cómo podemos transformar el trapecio en un rectángulo, solo con pliegues, para descubrir su altura <b>sin usar fórmulas memorizadas</b>?</p></div><p>Discutan en equipo y anoten su conjetura. <span class="timer" data-sec="240" title="Clic: iniciar / pausar">⏱ <span>4:00</span> conjeturas</span></p></section>
+<section class="slide" data-moment="inicio" data-title="Propósito y criterios"><span class="tag">Inicio · Propósito</span><h2>Propósito de la sesión</h2><div class="card acc"><p style='font-size:1.12em;font-weight:600'>Deducimos la relación de la mediana y el área del trapecio mediante pliegues de papiroflexia, descomposición geométrica y GeoGebra, para determinar las dimensiones de un soporte colapsable estable.</p></div><h3>Criterios de evaluación</h3><div class="crit"><b>C1</b><span>Identifica y clasifica trapecios y trapezoides en el plano de pliegues a partir de sus propiedades de paralelismo.</span><b>C2</b><span>Explica geométricamente por qué la línea media de un trapecio equivale al promedio de sus bases.</span><b>C3</b><span>Transforma un trapecio en un rectángulo equivalente mediante plegado para deducir la fórmula de su área.</span><b>C4</b><span>Valida sus deducciones numéricas comparando las medidas directas del prototipo con sus ecuaciones.</span></div><p class="small"><b>Evidencia:</b> Prototipo físico del soporte colapsable probado a la carga + ficha técnica de deducción de mediana y áreas.</p><p class="muted small">Escribe tu meta en el cuaderno: «Hoy voy a aprender a…»</p></section>
+<section class="slide" data-moment="desarrollo" data-title="Situación retadora"><span class="tag">Desarrollo · Familiarización</span><h2>Lab de estructuras geométricas colapsables</h2><div class="grid2"><div class="card acc"><p>En la feria escolar se fabricarán soportes colapsables de papel kraft. Cada equipo tiene una lámina de <b>24 cm × 30 cm</b>.</p><p>La cara frontal es un trapecio isósceles con <b>B = 24 cm</b>, <b>b = 12 cm</b> y área <b>A = 180 cm²</b>. La pestaña posterior es un <b>deltoide</b> cuya diagonal mayor coincide con el pliegue medio.</p></div><div class="card "><h3>Debemos descubrir</h3><ul class=""><li>la longitud del pliegue medio <b>M</b></li><li>la altura <b>h</b></li><li>el lado oblicuo <b>L</b></li></ul><p class="muted small">Primero con papel borrador; luego verificamos con GeoGebra.</p></div></div></section>
+<section class="slide" data-moment="desarrollo" data-title="Preguntas guía"><span class="tag">Desarrollo · Familiarización</span><h2>Comprendemos el problema</h2><ol class="qlist"><li>¿Qué figuras aparecen si trazamos una vertical desde cada extremo de la base menor?<br><button class="btn" data-show="r4">Respuesta esperada</button><div id="r4" class="hide ans">Un rectángulo central de 12 cm de base y dos triángulos rectángulos iguales.</div></li><li>¿Por qué la simetría de los lados no paralelos reparte mejor el peso?<br><button class="btn" data-show="r5">Respuesta esperada</button><div id="r5" class="hide ans">Porque los dos lados oblicuos son congruentes: cada uno soporta la misma carga.</div></li><li>¿Qué relación habrá entre el pliegue central y la suma B + b?<br><button class="btn" data-show="r6">Respuesta esperada</button><div id="r6" class="hide ans">Conjetura a comprobar: el pliegue mide la mitad de la suma de las bases.</div></li></ol></section>
+<section class="slide" data-moment="desarrollo" data-title="Descubrimiento 1: la mediana" id="sMed"><span class="tag">Desarrollo · Búsqueda de estrategias (C2)</span><div class="g-wide"><div><div class="ggb" data-ggb="med"></div></div><div><h3>Descubrimiento 1 · El pliegue medio</h3><p>Mueve las bases. Observa el pliegue medio <b>M</b> (une los puntos medios de los lados no paralelos).</p><div class="ctrl"><span>Base mayor B</span><input type="range" data-bind="med:B" min="14" max="30" step="1" value="24"><b data-out="med:B">24</b></div><div class="ctrl"><span>Base menor b</span><input type="range" data-bind="med:b" min="4" max="14" step="1" value="12"><b data-out="med:b">12</b></div><div class="ctrl"><span>Altura h</span><input type="range" data-bind="med:h" min="4" max="16" step="0.5" value="10"><b data-out="med:h">10</b></div><table class="t" id="medT"><tr><th>B</th><th>b</th><th>M</th><th>(B + b) / 2</th></tr></table><button class="btn" id="medAdd">Anotar fila</button> <button class="btn" data-show="r7">¿Qué regularidad hay?</button><div id="r7" class="hide ans"><b>M = (B + b) / 2</b>: el pliegue medio es el promedio de las bases, para cualquier trapecio.</div></div></div></section>
+<section class="slide" data-moment="desarrollo" data-title="Descubrimiento 2: rectángulo equivalente" id="sFold"><span class="tag">Desarrollo · Búsqueda de estrategias (C3)</span><div class="g-wide"><div><div class="ggb" data-ggb="fold"></div></div><div><h3>Descubrimiento 2 · Del trapecio al rectángulo</h3><p>Gira las esquinas inferiores sobre los puntos medios de los lados (como en el plegado).</p><div class="ctrl"><span>Plegado</span><input type="range" data-bind="fold:t" min="0" max="1" step="0.02" value="0"><b data-out="fold:t">0</b></div><div class="ctrl"><span>Altura h</span><input type="range" data-bind="fold:h" min="4" max="16" step="0.5" value="6"><b data-out="fold:h">6</b></div><div class="card" id="foldOut" style="font-variant-numeric:tabular-nums"></div><p class="small">Reto: busca la altura que da <b>A = 180 cm²</b>.</p><button class="btn" data-show="r8">Mostrar respuesta</button><div id="r8" class="hide ans">El rectángulo tiene base M = 18 cm y la misma altura h: A = M · h → 18 · h = 180 → <b>h = 10 cm</b>.</div></div></div></section>
+<section class="slide" data-moment="desarrollo" data-title="Lado oblicuo y prototipo"><span class="tag">Desarrollo · Ejecución y validación</span><div class="grid2"><div><div class="card acc"><h3>Cálculo del lado oblicuo</h3><p>Triángulo lateral: catetos <b>h = 10</b> y <b>x = (24 − 12)/2 = 6</b>.</p><button class="btn" data-show="r9">Ver cálculo</button><div id="r9" class="hide ans"><span class="formula">L = √(10² + 6²) = √136 ≈ 11,66 cm</span></div></div><div class="card "><h3>Construcción y prueba (C4)</h3><ol class=""><li>Trazar en la lámina 24 × 30 cm: B = 24, b = 12, h = 10.</li><li>Medir con regla el lado oblicuo y comparar con 11,66 cm.</li><li>Armar el soporte y probarlo con un libro.</li><li>Registrar: medida directa vs. medida calculada.</li></ol></div></div><div><div class="card "><h3>Tabla de validación</h3><table class=t><tr><th>Medida</th><th>Calculada</th><th>Medida en el prototipo</th></tr><tr><td>M</td><td>18 cm</td><td>…</td></tr><tr><td>h</td><td>10 cm</td><td>…</td></tr><tr><td>L</td><td>11,66 cm</td><td>…</td></tr><tr><td>A</td><td>180 cm²</td><td>…</td></tr></table><p class=small>Si la diferencia es mayor que 0,3 cm, ¿qué pudo fallar?</p></div><p><span class="timer" data-sec="900" title="Clic: iniciar / pausar">⏱ <span>15:00</span> trabajo en equipo</span></p></div></div></section>
+<section class="slide" data-moment="desarrollo" data-title="Socialización"><span class="tag">Desarrollo · Socialización</span><h2>Socializamos nuestras representaciones</h2><div class="card acc"><ul class=""><li>Un representante por equipo muestra en la pizarra cómo transformó el trapecio en rectángulo.</li><li>¿Todos obtuvieron h = 10 cm y M = 18 cm? ¿Por qué coinciden aunque usaron estrategias distintas?</li><li>¿Qué verificó GeoGebra que el papel no podía mostrar con exactitud?</li><li>Probamos los prototipos con carga: ¿cuál resiste mejor y por qué?</li></ul></div></section>
+<section class="slide" data-moment="desarrollo" data-title="Formalización"><span class="tag">Desarrollo · Formalización</span><h2>Formalizamos</h2><div class="grid2"><div><div class="card acc"><h3>Mediana (base media)</h3><p>Une los puntos medios de los lados no paralelos; es paralela a las bases.</p><span class="formula">M = (B + b) / 2</span><h3>Área</h3><span class="formula">A = M · h = [(B + b)/2] · h</span></div></div><div><div class="card "><h3>Clasificación</h3><ul class=""><li><b>Isósceles:</b> lados no paralelos congruentes; un eje de simetría.</li><li><b>Rectángulo:</b> un lado perpendicular a las bases.</li><li><b>Escaleno:</b> lados no paralelos distintos.</li><li><b>Trapezoide:</b> ningún par de lados paralelos.</li><li><b>Deltoide:</b> dos pares de lados consecutivos congruentes; diagonales perpendiculares; A = (D · d) / 2.</li></ul></div></div></div></section>
+<section class="slide" data-moment="desarrollo" data-title="Otros problemas"><span class="tag">Desarrollo · Otros problemas</span><h2>Planteamiento de otros problemas</h2><div class="grid3"><div class="card "><h3>P1 · El techo del refugio</h3><p>BC = 2x + 6, AD = 4x + 12, base media MN = 21 m. Halla x, BC y AD.</p><button class="btn" data-show="r10">Mostrar respuesta</button><div id="r10" class="hide ans">(6x + 18)/2 = 21 → 3x + 9 = 21 → <b>x = 4</b>; BC = 14 m, AD = 28 m.</div></div><div class="card "><h3>P2 · El estrado</h3><p>Trapecio isósceles con AD = 32 cm y BC = 14 cm; P y Q son puntos medios de las diagonales. Halla PQ.</p><button class="btn" data-show="r11">Mostrar respuesta</button><div id="r11" class="hide ans">PQ = (B − b)/2 = (32 − 14)/2 = <b>9 cm</b>. Las diagonales del trapecio isósceles son congruentes.</div></div><div class="card "><h3>P3 · El marco del mural</h3><p>Trapecio rectángulo (recto en A y B). Ĉ = (5k − 20)°, D̂ = (3k + 40)°. Halla k y el ángulo obtuso.</p><button class="btn" data-show="r12">Mostrar respuesta</button><div id="r12" class="hide ans">Ĉ y D̂ son consecutivos entre paralelas: 8k + 20 = 180 → <b>k = 20</b>; Ĉ = 80°, D̂ = 100° (obtuso). Ángulos: 90°, 90°, 80°, 100°.</div></div></div><p><span class="timer" data-sec="900" title="Clic: iniciar / pausar">⏱ <span>15:00</span> resolución</span></p></section>
+<section class="slide" data-moment="cierre" data-title="Ticket de salida"><span class="tag">Cierre · Evaluación</span><h2>Ticket de salida</h2><div class="card good"><ol class=""><li>¿Cómo logramos transformar el trapecio en un rectángulo equivalente solo con pliegues?</li><li>¿Qué ventaja tuvo deducir la mediana antes de calcular la altura del soporte?</li><li>¿Por qué es más provechoso deducir una propiedad que memorizar una fórmula?</li></ol></div><p><span class="timer" data-sec="360" title="Clic: iniciar / pausar">⏱ <span>6:00</span> individual</span></p></section>
+<section class="slide" data-moment="cierre" data-title="Metacognición"><span class="tag">Cierre · Metacognición</span><h2>Reflexionamos</h2><div class="card "><ul class=""><li>¿Qué criterio (C1 – C4) logré hoy y en cuál necesité ayuda?</li><li>¿Qué me ayudó más: el papel, GeoGebra o mi equipo?</li><li>¿En qué objetos de mi casa o de la ciudad aparecen trapecios?</li></ul></div><p class="muted">Próxima sesión: usaremos el prototipo para el empaque ecológico de la unidad.</p></section>
+</div>
+<div id="prog"></div>
+<nav id="menu"></nav>
+<div id="bar">
+  <button id="bMenu" title="Índice (M)">☰</button>
+  <button id="bPrev" title="Anterior (←)">◀</button>
+  <button id="bNext" title="Siguiente (→)">▶</button>
+  <span id="num"></span>
+  <span class="ttl" id="ttl"></span>
+  <button id="bTheme" title="Tema claro/oscuro">◐</button>
+  <button id="bFull" title="Pantalla completa (F)">⛶</button>
+</div>
+<script>
+/* ===== Motor de la presentación ===== */
+const GGB = {};          /* definiciones de applets GeoGebra: GGB[id] = {cmds:[], view:[xmin,xmax,ymin,ymax], after:fn, axes:true, grid:true} */
+const ON = {};           /* ON[slideId] = función que se ejecuta al entrar a la diapositiva */
+const API = {};          /* API[id] = applet GeoGebra cargado */
+const $ = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => [...r.querySelectorAll(s)];
+const fmt = (x, d=2) => (Math.round(x*10**d)/10**d + 0).toLocaleString('es-ES',{maximumFractionDigits:d,useGrouping:false});
+let slides = [], cur = 0;
+
+function show(i){
+  i = Math.max(0, Math.min(slides.length-1, i));
+  slides[cur] && slides[cur].classList.remove('active');
+  cur = i; const s = slides[cur]; s.classList.add('active');
+  $('#num').textContent = (cur+1) + ' / ' + slides.length;
+  $('#ttl').textContent = s.dataset.title || '';
+  $('#prog').style.width = ((cur+1)/slides.length*100) + '%';
+  $$('#menu a').forEach((a,k)=>a.classList.toggle('cur',k===cur));
+  try{ history.replaceState(null,'','#'+(cur+1)); }catch(e){}
+  $$('[data-ggb]', s).forEach(loadGGB);
+  if (s.id && ON[s.id]) { try{ ON[s.id](s); }catch(e){ console.error(e); } }
+  s.scrollTop = 0;
+}
+function buildMenu(){
+  const m = $('#menu'); let last = '';
+  const names = {portada:'Presentación', inicio:'Inicio', desarrollo:'Desarrollo', cierre:'Cierre'};
+  slides.forEach((s,k)=>{
+    const mo = s.dataset.moment || '';
+    if (mo !== last){ const d=document.createElement('div'); d.className='m'; d.textContent=names[mo]||mo; m.appendChild(d); last = mo; }
+    const a = document.createElement('a'); a.href = '#'+(k+1); a.textContent = (k+1)+'. '+(s.dataset.title||'');
+    a.onclick = e => { e.preventDefault(); show(k); m.classList.remove('open'); };
+    m.appendChild(a);
+  });
+}
+/* ---- botones "mostrar" ---- */
+document.addEventListener('click', e=>{
+  const b = e.target.closest('[data-show]');
+  if (b){ const t = document.getElementById(b.dataset.show); if(t){ t.classList.toggle('hide'); b.classList.toggle('solid'); } }
+  const tm = e.target.closest('.timer'); if (tm) toggleTimer(tm);
+});
+/* ---- temporizador ---- */
+function toggleTimer(el){
+  if (el._iv){ clearInterval(el._iv); el._iv=null; el.classList.remove('run'); return; }
+  if (el._left === undefined || el._left <= 0) el._left = +el.dataset.sec;
+  el.classList.add('run');
+  const draw = ()=>{ const m=Math.floor(el._left/60), s=el._left%60; el.querySelector('span').textContent = m+':'+String(s).padStart(2,'0'); };
+  draw();
+  el._iv = setInterval(()=>{ el._left--; draw(); if(el._left<=0){ clearInterval(el._iv); el._iv=null; el.classList.remove('run'); beep(); } },1000);
+}
+function beep(){ try{ const c=new (window.AudioContext||window.webkitAudioContext)(); const o=c.createOscillator(); const g=c.createGain();
+  o.connect(g); g.connect(c.destination); o.frequency.value=880; g.gain.value=.15; o.start(); setTimeout(()=>{o.stop(); c.close();},600);}catch(e){} }
+/* ---- GeoGebra ---- */
+let ggbState = 'none'; const ggbQueue = [];
+function loadGGBScript(){
+  if (ggbState !== 'none') return; ggbState = 'loading';
+  const sc = document.createElement('script'); sc.src = 'https://www.geogebra.org/apps/deployggb.js';
+  sc.onload = ()=>{ ggbState='ready'; ggbQueue.splice(0).forEach(injectGGB); };
+  sc.onerror = ()=>{ ggbState='fail'; ggbQueue.splice(0).forEach(failGGB); };
+  document.head.appendChild(sc);
+  setTimeout(()=>{ if(ggbState==='loading'){ ggbState='fail'; ggbQueue.splice(0).forEach(failGGB);} }, 20000);
+}
+function failGGB(el){ el.innerHTML = '<div class="msg">No se pudo cargar GeoGebra.<br>Este applet necesita conexión a internet.<br>Conéctate y recarga la página (F5).</div>'; }
+function loadGGB(el){
+  if (el.dataset.loaded) return; el.dataset.loaded = '1';
+  el.innerHTML = '<div class="msg">Cargando GeoGebra…</div>';
+  if (ggbState === 'ready') injectGGB(el); else if (ggbState === 'fail') failGGB(el); else { ggbQueue.push(el); loadGGBScript(); }
+}
+function injectGGB(el){
+  const id = el.dataset.ggb, def = GGB[id];
+  const box = document.createElement('div'); box.id = 'ggbx_'+id; el.innerHTML=''; el.appendChild(box);
+  const w = Math.max(300, el.clientWidth), h = Math.max(300, el.clientHeight);
+  const p = { appName:'classic', width:w, height:h, perspective:'G', showToolBar:false, showAlgebraInput:false, showMenuBar:false,
+    showResetIcon:false, enableShiftDragZoom:true, enableRightClick:false, enableLabelDrags:false, showZoomButtons:true,
+    language:'es', borderColor:'#ffffff', errorDialogsActive:false, useBrowserForJS:true,
+    appletOnLoad: api => {
+      API[id] = api;
+      api.setAxesVisible(def.axes!==false, def.axes!==false); api.setGridVisible(def.grid!==false);
+      (def.cmds||[]).forEach(c=>{ const ok = api.evalCommand(c); if(!ok) console.warn('GGB cmd falló:', id, c); });
+      if (def.view) api.setCoordSystem(...def.view);
+      if (def.fit){ /* encuadre con escala 1:1 */
+        const [x0,x1,y0,y1] = def.fit, s = Math.max((x1-x0)/w, (y1-y0)/h), cx=(x0+x1)/2, cy=(y0+y1)/2;
+        api.setCoordSystem(cx - s*w/2, cx + s*w/2, cy - s*h/2, cy + s*h/2); }
+      if (def.after) def.after(api);
+      el.dispatchEvent(new CustomEvent('ggbready',{detail:api}));
+    } };
+  const app = new GGBApplet(p, true);
+  if (window.GGB_CODEBASE) app.setHTML5Codebase(window.GGB_CODEBASE);
+  app.inject(box.id);
+}
+function ggbStyle(api, name, o){
+  if (!api.exists(name)) { console.warn('no existe', name); return; }
+  if (o.c) api.setColor(name, ...o.c);
+  if (o.t !== undefined) api.setLineThickness(name, o.t);
+  if (o.f !== undefined) api.setFilling(name, o.f);
+  if (o.ps !== undefined) api.setPointSize(name, o.ps);
+  if (o.lab !== undefined) api.setLabelVisible(name, o.lab);
+  if (o.cap !== undefined){ api.setCaption(name, o.cap); api.setLabelStyle(name, 3); api.setLabelVisible(name, true); }
+  if (o.fix) api.setFixed(name, true, false);
+  if (o.ls !== undefined) api.setLineStyle(name, o.ls);
+  if (o.vis !== undefined) api.setVisible(name, o.vis);
+}
+/* ---- arranque ---- */
+function boot(){
+  slides = $$('.slide'); buildMenu();
+  $('#bPrev').onclick = ()=>show(cur-1); $('#bNext').onclick = ()=>show(cur+1);
+  $('#bMenu').onclick = ()=>$('#menu').classList.toggle('open');
+  $('#bFull').onclick = full;
+  $('#bTheme').onclick = ()=>{ const r=document.documentElement; const d = r.dataset.theme==='dark' || (!r.dataset.theme && matchMedia('(prefers-color-scheme: dark)').matches);
+    r.dataset.theme = d ? 'light' : 'dark'; };
+  document.addEventListener('keydown', e=>{
+    if (e.target.matches('input,textarea,select')) return;
+    if (['ArrowRight','PageDown',' '].includes(e.key)){ e.preventDefault(); show(cur+1); }
+    else if (['ArrowLeft','PageUp'].includes(e.key)){ e.preventDefault(); show(cur-1); }
+    else if (e.key==='Home') show(0); else if (e.key==='End') show(slides.length-1);
+    else if (e.key==='f'||e.key==='F') full(); else if (e.key==='m'||e.key==='M') $('#menu').classList.toggle('open');
+  });
+  const h = parseInt((location.hash||'').slice(1)); show(isNaN(h)?0:h-1);
+}
+function full(){ if(!document.fullscreenElement) document.documentElement.requestFullscreen().catch(()=>{}); else document.exitFullscreen(); }
+</script>
+<script>
+
+/* ---- controles HTML enlazados a GeoGebra ---- */
+const VAL = {};
+function setOut(key, v){ $$('[data-out="'+key+'"]').forEach(o=>{ const u=o.dataset.unit||''; o.textContent = fmt(+v,2)+u; }); }
+document.addEventListener('input', e=>{
+  const el = e.target;
+  if (el.dataset.bind){ const [a,v]=el.dataset.bind.split(':'); VAL[a]=VAL[a]||{}; VAL[a][v]=+el.value;
+    setOut(el.dataset.bind, el.value); if(API[a]) API[a].setValue(v, +el.value); if(UPD[a]) UPD[a](VAL[a]); }
+  if (el.dataset.bindc){ const [a,v]=el.dataset.bindc.split(':'); VAL[a]=VAL[a]||{}; VAL[a][v]=el.checked?1:0;
+    if(API[a]) API[a].setValue(v, el.checked?1:0); if(UPD[a]) UPD[a](VAL[a]); }
+});
+const UPD = {};
+function initBinds(){
+  $$('[data-bind]').forEach(el=>{ const [a,v]=el.dataset.bind.split(':'); VAL[a]=VAL[a]||{}; VAL[a][v]=+el.value; setOut(el.dataset.bind, el.value); });
+  $$('[data-bindc]').forEach(el=>{ const [a,v]=el.dataset.bindc.split(':'); VAL[a]=VAL[a]||{}; VAL[a][v]=el.checked?1:0; });
+  Object.keys(UPD).forEach(a=>UPD[a](VAL[a]||{}));
+}
+document.addEventListener('ggbready', e=>{
+  const el = e.target, a = el.dataset.ggb, api = e.detail;
+  Object.entries(VAL[a]||{}).forEach(([v,x])=>{ if(api.exists(v)) api.setValue(v,x); });
+}, true);
+document.addEventListener('DOMContentLoaded', initBinds);
+
+/* --- motivación: carga sobre los soportes --- */
+function standReset(){ $('#st1r').setAttribute('transform',''); $('#books').setAttribute('transform',''); $('#books').children[0].setAttribute('transform',''); }
+document.addEventListener('click', e=>{
+  if (e.target.id==='bLoad'){ const r=$('#st1r'); r.style.transition='transform .8s'; r.setAttribute('transform','translate(0,240) skewX(-28) translate(0,-240)');
+    $('#books').children[0].setAttribute('transform','translate(-60,60) rotate(14 170 83)'); }
+  if (e.target.id==='bReset') standReset();
+});
+/* --- clasificador de cuadriláteros --- */
+const SH = [
+  {n:'Trapecio isósceles', p:'20,140 170,140 135,40 55,40', k:'iso'},
+  {n:'Trapecio rectángulo', p:'215,140 365,140 300,40 215,40', k:'rec'},
+  {n:'Trapecio escaleno', p:'410,140 580,140 540,40 450,40', k:'esc'},
+  {n:'Trapezoide simétrico (deltoide)', p:'95,175 160,235 95,320 30,235', k:'del'},
+  {n:'Trapezoide asimétrico', p:'220,185 350,200 330,315 245,290', k:'tz'},
+  {n:'Paralelogramo', p:'410,300 540,300 580,195 450,195', k:'par'}];
+const CAT = [['iso','Trapecio isósceles'],['rec','Trapecio rectángulo'],['esc','Trapecio escaleno'],['del','Deltoide'],['tz','Trapezoide'],['par','No es trapecio ni trapezoide']];
+const WHY = {iso:'Un par de lados paralelos y lados no paralelos congruentes.', rec:'Un par de lados paralelos y un lado perpendicular a las bases.',
+  esc:'Un par de lados paralelos y lados no paralelos de distinta medida.', del:'Ningún lado paralelo; dos pares de lados consecutivos congruentes.',
+  tz:'Ningún par de lados paralelos.', par:'Tiene DOS pares de lados paralelos: es un paralelogramo.'};
+let sel = null, okSet = new Set();
+function drawCls(){
+  const svg = $('#cls'); svg.innerHTML='';
+  SH.forEach((s,i)=>{ const g=document.createElementNS('http://www.w3.org/2000/svg','polygon'); g.setAttribute('points',s.p);
+    g.setAttribute('fill', okSet.has(i)?'#bfe8cf':(sel===i?'#fde68a':'#e6edf9')); g.setAttribute('stroke','#1f5fbf'); g.setAttribute('stroke-width','3');
+    g.style.cursor='pointer'; g.onclick=()=>{ sel=i; $('#clsFb').textContent='Figura seleccionada: ¿cómo se clasifica?'; drawCls(); }; svg.appendChild(g); });
+  const b=$('#clsBtns'); if(!b.children.length) CAT.forEach(([k,t])=>{ const x=document.createElement('button'); x.className='btn'; x.textContent=t;
+    x.onclick=()=>{ if(sel===null){ $('#clsFb').textContent='Primero toca una figura.'; return; }
+      const s=SH[sel]; if(s.k===k){ okSet.add(sel); $('#clsFb').innerHTML='<span class="ok">✓ Correcto.</span> '+WHY[k]; }
+      else $('#clsFb').innerHTML='<span class="no">✗ Revisa:</span> cuenta los pares de lados paralelos y compara las medidas de los lados.';
+      $('#clsOk').textContent=okSet.size; drawCls(); }; b.appendChild(x); });
+}
+ON.sCls = drawCls;
+/* --- GeoGebra: trapecio, mediana y rectángulo equivalente --- */
+function trapCmds(fold){
+  const c = ['B=24','b=12','h=' + (fold?6:10),'t=0','verM=true',
+    'Pa=(-B/2,0)','Pb=(B/2,0)','Pc=(b/2,h)','Pd=(-b/2,h)',
+    'Ml=Midpoint(Pa,Pd)','Mr=Midpoint(Pb,Pc)','med=Segment(Ml,Mr)',
+    'tB=Text("B = "+B+" cm",(-2.2,-1.4))','tb=Text("b = "+b+" cm",(-2,h+0.5))','tM=Text("M = "+((B+b)/2)+" cm",(x(Mr)+0.4,h/2))',
+    'hs=Segment(Pd,(x(Pd),0))'];
+  if (!fold) c.push('trap=Polygon({Pa,Pb,Pc,Pd})');
+  else c.push('Qa=(x(Ml),0)','Qb=(x(Mr),0)','core=Polygon({Qa,Qb,Mr,Pc,Pd,Ml})','T1=Polygon({Pa,Qa,Ml})','T2=Polygon({Pb,Qb,Mr})',
+    'R1=Rotate(T1,-t*pi,Ml)','R2=Rotate(T2,t*pi,Mr)','ghost=Polygon({Pa,Pb,Pc,Pd})','rect=Polygon({Qa,Qb,(x(Qb),h),(x(Qa),h)})',
+    'tA=Text("A = M · h = "+((B+b)/2)+" · "+h+" = "+((B+b)/2*h)+" cm²",(-11,-3))');
+  return c;
+}
+function trapStyle(api, fold){
+  ['Pa','Pb','Pc','Pd','Ml','Mr'].forEach(p=>ggbStyle(api,p,{ps:4,lab:false,fix:true,c:[30,60,130]}));
+  ggbStyle(api,'med',{c:[194,65,12],t:7,lab:false}); ggbStyle(api,'hs',{c:[90,90,90],t:4,ls:1,lab:false});
+  ['tB','tb','tM','tA'].forEach(n=>{ if(api.exists(n)){ api.setColor(n,29,36,51); api.setFixed(n,true,false);} });
+  api.setColor('tM',194,65,12);
+  if (!fold){ ggbStyle(api,'trap',{c:[31,95,191],f:.25,t:5,lab:false}); }
+  else { ggbStyle(api,'core',{c:[14,138,106],f:.35,t:4,lab:false}); ggbStyle(api,'T1',{vis:false}); ggbStyle(api,'T2',{vis:false});
+    ['R1','R2'].forEach(n=>ggbStyle(api,n,{c:[194,65,12],f:.45,t:4,lab:false}));
+    ggbStyle(api,'ghost',{c:[150,150,150],f:0,t:2,ls:1,lab:false}); ggbStyle(api,'rect',{c:[31,95,191],f:0,t:6,lab:false,vis:false});
+    ['Qa','Qb'].forEach(p=>ggbStyle(api,p,{vis:false})); }
+  api.getAllObjectNames().forEach(n=>{ if(api.getObjectType(n).match(/segment/)) api.setLabelVisible(n,false); });
+}
+GGB.med  = {cmds: trapCmds(false), fit:[-17,17,-3,18], after: api=>trapStyle(api,false)};
+GGB.fold = {cmds: trapCmds(true),  fit:[-17,17,-5,18], after: api=>trapStyle(api,true)};
+UPD.med = v => {};
+document.addEventListener('click', e=>{
+  if (e.target.id!=='medAdd') return; const v=VAL.med||{B:24,b:12}; const tr=document.createElement('tr');
+  tr.innerHTML=`<td>${v.B}</td><td>${v.b}</td><td>${fmt((v.B+v.b)/2)}</td><td>…</td>`; tr.lastChild.onclick=()=>tr.lastChild.textContent=fmt((v.B+v.b)/2);
+  tr.lastChild.title='Clic para comprobar'; $('#medT').appendChild(tr);
+});
+UPD.fold = v => { if(API.fold) API.fold.setVisible('rect', (v.t||0)>0.98); const B=24,b=12,h=v.h??6, M=(B+b)/2, A=M*h, L=Math.hypot(h,(B-b)/2);
+  $('#foldOut').innerHTML = `M = (24 + 12)/2 = <b>${fmt(M)}</b> cm<br>A = M · h = 18 · ${fmt(h)} = <b>${fmt(A)}</b> cm² `
+   + (Math.abs(A-180)<1e-9?'<span class="ok">✓ ¡180 cm²!</span>':'<span class="muted">(meta: 180)</span>')
+   + `<br>Lado oblicuo L = √(h² + 6²) ≈ <b>${fmt(L)}</b> cm`; };
+
+</script>
+<script>boot();</script>
+</body>
+</html>

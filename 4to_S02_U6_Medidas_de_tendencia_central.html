@@ -1,0 +1,346 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Análisis estadístico de ventas e ingresos en emprendimientos</title>
+<style>
+:root{
+  --bg:#f6f4ee; --paper:#ffffff; --ink:#1d2433; --muted:#5b6475; --line:#d9d4c7;
+  --acc:#1f5fbf; --acc2:#0e8a6a; --warn:#c2410c; --bad:#b42318; --good:#147a3d;
+  --ini:#c2410c; --des:#1f5fbf; --cie:#0e8a6a;
+  --hl:#fff3c4; --code:#f1efe8;
+  --fs: clamp(17px, 1.85vw, 32px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#14171d; --paper:#1d222b; --ink:#e9edf4; --muted:#a3acbb; --line:#323a47;
+    --acc:#6ea8ff; --acc2:#3ccf9f; --warn:#ff9a5c; --bad:#ff7b72; --good:#4ade80;
+    --ini:#ff9a5c; --des:#6ea8ff; --cie:#3ccf9f; --hl:#4a3f12; --code:#262c37;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#14171d; --paper:#1d222b; --ink:#e9edf4; --muted:#a3acbb; --line:#323a47;
+  --acc:#6ea8ff; --acc2:#3ccf9f; --warn:#ff9a5c; --bad:#ff7b72; --good:#4ade80;
+  --ini:#ff9a5c; --des:#6ea8ff; --cie:#3ccf9f; --hl:#4a3f12; --code:#262c37;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);
+  font-family:"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;font-size:var(--fs);line-height:1.35}
+body{overflow:hidden}
+#deck{position:fixed;inset:0 0 54px 0}
+.slide{position:absolute;inset:0;display:none;padding:2.2em 3.2em 1.2em;overflow:auto}
+.slide.active{display:flex;flex-direction:column;animation:fade .25s ease}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.tag{display:inline-flex;gap:.5em;align-items:center;font-size:.72em;font-weight:700;letter-spacing:.06em;
+  text-transform:uppercase;color:#fff;background:var(--des);border-radius:99px;padding:.18em .8em;align-self:flex-start}
+.slide[data-moment="inicio"] .tag{background:var(--ini)}
+.slide[data-moment="cierre"] .tag{background:var(--cie)}
+.slide[data-moment="portada"] .tag{background:var(--muted)}
+h1{font-size:2.1em;line-height:1.1;margin:.35em 0 .3em}
+h2{font-size:1.55em;line-height:1.15;margin:.35em 0 .45em}
+h3{font-size:1.1em;margin:.4em 0 .3em;color:var(--acc)}
+p{margin:.35em 0}
+ul,ol{margin:.3em 0 .3em 1.2em;padding:0}
+li{margin:.22em 0}
+.muted{color:var(--muted)}
+.small{font-size:.8em}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:1.2em;align-items:start}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:1em}
+.g-wide{display:grid;grid-template-columns:1.55fr 1fr;gap:1.2em;flex:1;min-height:0}
+.g-wide>div,.grid2.fill>div{min-height:0;display:flex;flex-direction:column}
+.grid2.fill{flex:1;min-height:0}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:.8em 1em}
+.card.acc{border-left:6px solid var(--acc)}
+.card.warn{border-left:6px solid var(--warn)}
+.card.good{border-left:6px solid var(--good)}
+.big{font-size:1.35em;font-weight:700}
+.formula{font-family:"Cambria Math","STIX Two Math","Times New Roman",serif;font-size:1.3em;background:var(--code);
+  border-radius:10px;padding:.25em .7em;display:inline-block;margin:.2em 0}
+mark{background:var(--hl);color:inherit;padding:0 .15em;border-radius:4px}
+.btn{font:inherit;font-size:.82em;border:1px solid var(--acc);color:var(--acc);background:transparent;border-radius:10px;
+  padding:.35em .85em;cursor:pointer;margin:.2em .3em .2em 0}
+.btn:hover{background:var(--acc);color:#fff}
+.btn.solid{background:var(--acc);color:#fff}
+.hide{display:none!important}
+.ans{border-left:5px solid var(--good);background:color-mix(in srgb,var(--good) 10%,transparent);
+  padding:.4em .8em;border-radius:8px;margin:.35em 0}
+.ok{color:var(--good);font-weight:700}.no{color:var(--bad);font-weight:700}
+table.t{border-collapse:collapse;margin:.3em 0;font-size:.92em}
+table.t th,table.t td{border:1px solid var(--line);padding:.22em .6em;text-align:center}
+table.t th{background:var(--code)}
+input[type=number],input[type=text]{font:inherit;font-size:.9em;width:5.2em;padding:.15em .35em;border:1px solid var(--line);
+  border-radius:8px;background:var(--paper);color:var(--ink);text-align:center}
+input[type=range]{width:100%;accent-color:var(--acc)}
+.ctrl{display:grid;grid-template-columns:auto 1fr 4.2em;gap:.4em .7em;align-items:center;margin:.3em 0}
+.ctrl b{font-variant-numeric:tabular-nums;text-align:right}
+.ggb{width:100%;flex:1;min-height:340px;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#fff;position:relative}
+.ggb .msg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:1em;color:#5b6475;font-size:.85em}
+.viz{width:100%;height:100%;min-height:300px}
+svg text{font-family:inherit}
+.timer{display:inline-flex;align-items:center;gap:.4em;font-variant-numeric:tabular-nums;font-weight:700;
+  border:2px solid var(--warn);color:var(--warn);border-radius:99px;padding:.1em .8em;cursor:pointer;user-select:none}
+.timer.run{background:var(--warn);color:#fff}
+.portada{justify-content:center}
+.portada .meta{display:grid;grid-template-columns:auto 1fr;gap:.25em 1em;font-size:.9em;margin-top:1em}
+.qlist li{margin:.45em 0}
+.pill{display:inline-block;border:1px solid var(--line);border-radius:99px;padding:.05em .6em;font-size:.8em;margin:.1em}
+.crit{display:grid;grid-template-columns:auto 1fr;gap:.2em .7em;font-size:.8em}
+.crit b{color:var(--acc)}
+/* barra inferior */
+#bar{position:fixed;left:0;right:0;bottom:0;height:54px;display:flex;align-items:center;gap:.6em;padding:0 1em;
+  background:var(--paper);border-top:1px solid var(--line);font-size:15px}
+#bar button{font:inherit;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:8px;height:36px;min-width:40px;cursor:pointer}
+#bar .ttl{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--muted)}
+#prog{position:fixed;left:0;bottom:54px;height:4px;background:var(--acc);transition:width .25s}
+#menu{position:fixed;left:0;top:0;bottom:54px;width:min(420px,92vw);background:var(--paper);border-right:1px solid var(--line);
+  overflow:auto;transform:translateX(-102%);transition:transform .2s;z-index:20;padding:1em;font-size:15px}
+#menu.open{transform:none}
+#menu a{display:block;padding:.35em .5em;border-radius:6px;color:var(--ink);text-decoration:none}
+#menu a:hover,#menu a.cur{background:var(--code)}
+#menu .m{font-weight:700;margin:.7em 0 .2em;color:var(--muted);text-transform:uppercase;font-size:.8em}
+@media (max-width:820px){
+  .slide{padding:1.4em 1.1em 1em}
+  .grid2,.g-wide,.grid3{grid-template-columns:1fr}
+  h1{font-size:1.6em}
+}
+@media print{body{overflow:visible}#bar,#prog,#menu{display:none}#deck{position:static}
+  .slide{display:flex!important;position:relative;page-break-after:always;min-height:100vh}}
+</style>
+</head>
+<body>
+<div id="deck">
+<section class="slide" data-moment="portada" data-title="Portada"><span class="tag">Sesión</span><div class="portada" style="display:flex;flex-direction:column;flex:1;justify-content:center"><div class="muted">Sesión 02 · UA6 · 4.° A y B · Matemática</div><h1>Análisis estadístico de ventas e ingresos en emprendimientos solidarios: medidas de tendencia central para datos agrupados</h1><div class="meta"><span class="muted">I. E.</span><span>San Juan Apóstol – Arequipa</span><span class="muted">Grado</span><span>4.° A (8:00 – 9:30) y 4.° B (11:30 – 1:00)</span><span class="muted">Fecha</span><span>Jueves 1 de octubre de 2026</span><span class="muted">Competencia</span><span>Resuelve problemas de gestión de datos e incertidumbre</span><span class="muted">Practicante</span><span>Ever Wilson Bautista Huahuasoncco</span><span class="muted">Docente de aula</span><span>Prof. Nery Saico Gonzales</span></div><p class="small muted" style="margin-top:1.2em">Navega con ← → · F pantalla completa · M índice · ◐ tema</p></div></section>
+<section class="slide" data-moment="inicio" data-title="Motivación" id="sMot"><span class="tag">Inicio · Motivación</span><div class="grid2 fill"><div><h2>Madres Emprendedoras de San Juan Apóstol</h2><p>Ingresos diarios por ventas de artesanías y productos ecológicos durante <b>200 jornadas</b>.</p><div class="card acc"><p class="big">Si una emprendedora quiere saber cuánto venderá en un <mark>día típico</mark> para comprar su mercadería sin pérdidas, ¿qué indicador es el más realista?</p></div></div><div><svg id="hist0" class="viz" viewBox="0 0 560 360"></svg></div></div></section>
+<section class="slide" data-moment="inicio" data-title="Saberes previos"><span class="tag">Inicio · Saberes previos</span><h2>Recordemos</h2><ol class="qlist"><li>¿Por qué el dinero recaudado (S/) es una variable continua que conviene agrupar en intervalos como [20; 40⟩?<br><button class="btn" data-show="r1">Respuesta esperada</button><div id="r1" class="hide ans">Puede tomar cualquier valor (S/ 37,50; S/ 41,20…); agrupar en intervalos permite resumir muchos datos.</div></li><li>Si la moda de ingresos diarios es baja, ¿qué decisión debe tomar el comerciante sobre su inventario?<br><button class="btn" data-show="r2">Respuesta esperada</button><div id="r2" class="hide ans">Comprar insumos según lo que se vende con más frecuencia, no según el mejor día.</div></li><li>Si en un día festivo se vende muchísimo, ¿qué pasa con el promedio del mes?<br><button class="btn" data-show="r3">Respuesta esperada</button><div id="r3" class="hide ans">Sube, aunque la mayoría de días se venda poco: el promedio se “infla” con valores atípicos.</div></li></ol></section>
+<section class="slide" data-moment="inicio" data-title="Conflicto cognitivo"><span class="tag">Inicio · Conflicto cognitivo</span><h2>¿Quién tiene razón?</h2><div class="grid2"><div class="card good"><p class="big">Socia 1: «¡Es un éxito! El <b>promedio</b> dice que ganamos casi <b>S/ 60</b> al día.»</p></div><div class="card warn"><p class="big">Socia 2: «La <b>mayoría de los días</b> vendemos unos <b>S/ 50</b> y no alcanza para los insumos.»</p></div></div><p>¿Cómo pueden tener razón las dos si miran los mismos registros? ¿Qué otra medida revela la verdad sobre las ventas diarias?</p><p><span class="timer" data-sec="180" title="Clic: iniciar / pausar">⏱ <span>3:00</span> conjeturas</span></p></section>
+<section class="slide" data-moment="inicio" data-title="Propósito y criterios"><span class="tag">Inicio · Propósito</span><h2>Propósito de la sesión</h2><div class="card acc"><p style='font-size:1.12em;font-weight:600'>Interpretamos las medidas de tendencia central de datos agrupados sobre ventas diarias de emprendimientos de la comunidad, usando una ficha técnica interactiva, para evaluar su sostenibilidad y fortalecer la autonomía económica del hogar.</p></div><h3>Criterios de evaluación</h3><div class="crit"><b>C1</b><span>Estructura tablas de frecuencias agrupando ingresos en intervalos con sus amplitudes y marcas de clase.</span><b>C2</b><span>Ejecuta con exactitud las fórmulas de tendencia central para datos agrupados usando frecuencias acumuladas.</span><b>C3</b><span>Compara la venta promedio (x̄) con la mediana (Me), justificando cuál refleja la rentabilidad sostenible.</span><b>C4</b><span>Formula decisiones de inversión e inventario basadas en la moda y la mediana de ingresos.</span></div><p class="small"><b>Evidencia:</b> Ficha técnica interactiva de gestión comercial (x̄, Me y Mo) + propuesta de optimización para el periódico mural.</p><p class="muted small">Escribe tu meta en el cuaderno: «Hoy voy a aprender a…»</p></section>
+<section class="slide" data-moment="desarrollo" data-title="Situación retadora"><span class="tag">Desarrollo · Familiarización</span><h2>Feria «Madres de Esperanza»</h2><div class="grid2"><div><div class="card acc"><p>El taller de emprendimiento consolidó las ventas diarias (S/) de <b>200 jornadas</b>. Se pide:</p><ol class=""><li>Determinar la media (x̄), la mediana (Me) y la moda (Mo).</li><li>Redactar un dictamen financiero sobre la viabilidad del negocio.</li><li>Proponer una estrategia de compra de insumos con la medida más prudente.</li></ol></div></div><div><table class="t"><tr><th>Ventas (S/)</th><th>Jornadas fᵢ</th></tr><tr><td>[20; 40⟩</td><td>30</td></tr><tr><td>[40; 60⟩</td><td>90</td></tr><tr><td>[60; 80⟩</td><td>50</td></tr><tr><td>[80; 100⟩</td><td>20</td></tr><tr><td>[100; 120]</td><td>10</td></tr><tr><th>Total</th><th>N = 200</th></tr></table><ol class="qlist"><li>¿Qué significa fᵢ = 90?<br><button class="btn" data-show="r4">Respuesta esperada</button><div id="r4" class="hide ans">Que en 90 de los 200 días se vendió entre S/ 40 y S/ 60.</div></li><li>¿Por qué necesitamos las tres medidas?<br><button class="btn" data-show="r5">Respuesta esperada</button><div id="r5" class="hide ans">Cada una responde a una pregunta distinta: promedio, centro y valor más frecuente.</div></li></ol></div></div></section>
+<section class="slide" data-moment="desarrollo" data-title="Ficha técnica interactiva" id="sFt"><span class="tag">Desarrollo · Búsqueda de estrategias</span><div class="grid2"><div><h2>Ficha técnica interactiva (C1)</h2><p>Cada equipo completa las marcas de clase, la frecuencia acumulada y fᵢ · xᵢ. Luego verifica.</p>
+<table class="t" id="ft"><tr><th>Intervalo (S/)</th><th>fᵢ</th><th>xᵢ</th><th>Fᵢ</th><th>fᵢ · xᵢ</th></tr></table>
+<button class="btn solid" id="ftChk">Verificar la tabla</button> <button class="btn" id="ftSol">Completar (clave)</button>
+<span id="ftFb"></span></div><div><div class="card "><h3>Recuerda</h3><ul class=""><li>Marca de clase: xᵢ = (límite inferior + límite superior) / 2</li><li>Frecuencia acumulada: Fᵢ = suma de fᵢ hasta esa fila</li><li>Amplitud: A = 20</li></ul></div><p><span class="timer" data-sec="600" title="Clic: iniciar / pausar">⏱ <span>10:00</span> auditoría de datos</span></p></div></div></section>
+<section class="slide" data-moment="desarrollo" data-title="Cálculo paso a paso"><span class="tag">Desarrollo · Ejecución (C2)</span><h2>Calculamos x̄, Me y Mo (C2)</h2><div class="grid3"><div class="card "><h3>Media</h3><span class="formula">x̄ = Σ fᵢ·xᵢ / N</span><button class="btn" data-show="r6">Ver</button><div id="r6" class="hide ans">x̄ = 11 800 / 200 = <b>S/ 59,00</b></div></div><div class="card "><h3>Mediana</h3><span class="formula">Me = Lᵢ + [(N/2 − Fᵢ₋₁)/fᵢ]·A</span><p class="small">N/2 = 100 → clase [40; 60⟩ (F₂ = 120)</p><button class="btn" data-show="r7">Ver</button><div id="r7" class="hide ans">Me = 40 + [(100 − 30)/90]·20 = 40 + 15,56 = <b>S/ 55,56</b></div></div><div class="card "><h3>Moda</h3><span class="formula">Mo = Lᵢ + [d₁/(d₁ + d₂)]·A</span><p class="small">Clase modal [40; 60⟩: d₁ = 90 − 30, d₂ = 90 − 50</p><button class="btn" data-show="r8">Ver</button><div id="r8" class="hide ans">Mo = 40 + [60/(60 + 40)]·20 = 40 + 12 = <b>S/ 52,00</b></div></div></div><div class="card warn"><b>Error frecuente:</b> promediar las marcas de clase sin multiplicar por fᵢ: (30 + 50 + 70 + 90 + 110)/5 = 70. ¿Por qué no es correcto?</div></section>
+<section class="slide" data-moment="desarrollo" data-title="Simulador: días atípicos" id="sSim"><span class="tag">Desarrollo · Búsqueda de estrategias (C3)</span><div class="g-wide"><div><svg id="hist1" class="viz" viewBox="0 0 560 360"></svg></div><div><h3>¿Qué medida se deja engañar? (C3)</h3><p>Agrega días de venta muy alta (ferias, fiestas) en el intervalo [100; 120].</p><div class="ctrl"><span>Días extra de venta alta</span><input type="range" id="extra" min="0" max="60" step="5" value="0"><b id="extraV">0</b></div><div class="ctrl"><span>Ventas bajas (en [20; 40⟩)</span><input type="range" id="low" min="10" max="60" step="5" value="30"><b id="lowV">30</b></div><div class="card" id="simOut" style="font-variant-numeric:tabular-nums"></div><button class="btn" data-show="r9">¿Qué observamos?</button><div id="r9" class="hide ans">La <b>media</b> es la más sensible a los valores extremos; la <b>mediana</b> y la <b>moda</b> casi no cambian. Por eso, para comprar insumos conviene la moda (S/ 52) y la mediana (S/ 55,56).</div></div></div></section>
+<section class="slide" data-moment="desarrollo" data-title="Socialización y dictamen"><span class="tag">Desarrollo · Socialización</span><h2>Dictamen financiero (C4)</h2><div class="card acc"><p class="big">«Aunque el promedio indica S/ 59,00, no debemos asumirlo como base para las compras diarias porque está inflado por días atípicos. Lo prudente es presupuestar sobre la moda de S/ 52,00…»</p></div><ul class=""><li>¿Qué medida usarías para fijar la meta de venta mínima?</li><li>¿Qué propuesta llevarías al periódico mural?</li><li>¿Cómo ayuda este análisis a prevenir el endeudamiento de las familias?</li></ul></section>
+<section class="slide" data-moment="desarrollo" data-title="Formalización"><span class="tag">Desarrollo · Formalización</span><h2>Formalizamos</h2><div class="grid3"><div class="card acc"><h3>Media</h3><span class="formula">x̄ = Σ fᵢ·xᵢ / N</span><p>Promedio ponderado con las marcas de clase.</p></div><div class="card acc"><h3>Mediana</h3><span class="formula">Me = Lᵢ + [(N/2 − Fᵢ₋₁)/fᵢ]·A</span><p>Divide al 50 % de las jornadas.</p></div><div class="card acc"><h3>Moda</h3><span class="formula">Mo = Lᵢ + [d₁/(d₁ + d₂)]·A</span><p>Valor de mayor recurrencia.</p></div></div><div class="card good">Si x̄ &gt; Me &gt; Mo, los datos tienen <b>asimetría positiva</b>: unos pocos valores altos elevan el promedio.</div></section>
+<section class="slide" data-moment="desarrollo" data-title="Otros problemas"><span class="tag">Desarrollo · Otros problemas</span><h2>Planteamiento de otros problemas</h2><div class="grid3"><div class="card "><h3>P1 · Repostería (50 puestos)</h3><table class="t"><tr><th>S/</th><th>fᵢ</th></tr><tr><td>[10;30⟩</td><td>8</td></tr><tr><td>[30;50⟩</td><td>22</td></tr><tr><td>[50;70⟩</td><td>15</td></tr><tr><td>[70;90⟩</td><td>5</td></tr></table><button class="btn" data-show="r10">Mostrar respuesta</button><div id="r10" class="hide ans">Me = 30 + [(25 − 8)/22]·20 ≈ <b>S/ 45,45</b>; Mo = 30 + [14/(14 + 7)]·20 ≈ <b>S/ 43,33</b>. Meta mínima sustentable ≈ S/ 45.</div></div><div class="card "><h3>P2 · Insumos (40 días)</h3><table class="t"><tr><th>S/</th><th>fᵢ</th></tr><tr><td>[0;50⟩</td><td>5</td></tr><tr><td>[50;100⟩</td><td>20</td></tr><tr><td>[100;150⟩</td><td>11</td></tr><tr><td>[150;200⟩</td><td>4</td></tr></table><button class="btn" data-show="r11">Mostrar respuesta</button><div id="r11" class="hide ans">x̄ = 3 700/40 = <b>S/ 92,50</b>; Me = 50 + [(20 − 5)/20]·50 = <b>S/ 87,50</b>: la mediana no se afecta por los días de gasto alto.</div></div><div class="card "><h3>P3 · Asimetría</h3><p>x̄ = S/ 380, Me = S/ 320, Mo = S/ 290.</p><button class="btn" data-show="r12">Mostrar respuesta</button><div id="r12" class="hide ans">Asimetría positiva: la mayoría de microempresarias gana menos que el promedio; el apoyo debe planificarse con Me y Mo.</div></div></div><p><span class="timer" data-sec="900" title="Clic: iniciar / pausar">⏱ <span>15:00</span></span></p></section>
+<section class="slide" data-moment="desarrollo" data-title="Calculadora de datos agrupados" id="sCalc"><span class="tag">Desarrollo · Otros problemas</span><div class="g-wide"><div><svg id="hist2" class="viz" viewBox="0 0 560 360"></svg></div><div><h3>Comprueba con la calculadora</h3><p class="small">Escribe el límite inferior, la amplitud y las frecuencias separadas por comas.</p><p>L₀ <input type="number" id="cL" value="10"> A <input type="number" id="cA" value="20"></p><p>fᵢ <input type="text" id="cF" value="8, 22, 15, 5" style="width:10em"> <button class="btn solid" id="cGo">Calcular</button></p><div class="card" id="cOut"></div><p class="small muted">P2: L₀ = 0, A = 50, fᵢ = 5, 20, 11, 4.</p></div></div></section>
+<section class="slide" data-moment="cierre" data-title="Ticket de salida"><span class="tag">Cierre · Evaluación</span><h2>Ticket de salida</h2><div class="card good"><ol class=""><li>¿De qué forma la estadística ayuda a gestionar un negocio familiar y evitar pérdidas?</li><li>¿Por qué la moda de ingresos es clave para decidir las compras de inventario?</li><li>¿Cómo contribuye la autonomía económica de las mujeres a construir familias más justas?</li></ol></div><p><span class="timer" data-sec="360" title="Clic: iniciar / pausar">⏱ <span>6:00</span></span></p></section>
+<section class="slide" data-moment="cierre" data-title="Metacognición"><span class="tag">Cierre · Metacognición</span><h2>Reflexionamos</h2><div class="card "><ul class=""><li>¿Qué parte del cálculo me resultó más difícil: Fᵢ, la mediana o la moda?</li><li>¿Qué me mostró el simulador que no veía en la tabla?</li><li>¿Qué criterio (C1 – C4) debo reforzar?</li></ul></div><p class="muted">Próxima sesión: elaboramos la propuesta para el periódico mural.</p></section>
+</div>
+<div id="prog"></div>
+<nav id="menu"></nav>
+<div id="bar">
+  <button id="bMenu" title="Índice (M)">☰</button>
+  <button id="bPrev" title="Anterior (←)">◀</button>
+  <button id="bNext" title="Siguiente (→)">▶</button>
+  <span id="num"></span>
+  <span class="ttl" id="ttl"></span>
+  <button id="bTheme" title="Tema claro/oscuro">◐</button>
+  <button id="bFull" title="Pantalla completa (F)">⛶</button>
+</div>
+<script>
+/* ===== Motor de la presentación ===== */
+const GGB = {};          /* definiciones de applets GeoGebra: GGB[id] = {cmds:[], view:[xmin,xmax,ymin,ymax], after:fn, axes:true, grid:true} */
+const ON = {};           /* ON[slideId] = función que se ejecuta al entrar a la diapositiva */
+const API = {};          /* API[id] = applet GeoGebra cargado */
+const $ = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => [...r.querySelectorAll(s)];
+const fmt = (x, d=2) => (Math.round(x*10**d)/10**d + 0).toLocaleString('es-ES',{maximumFractionDigits:d,useGrouping:false});
+let slides = [], cur = 0;
+
+function show(i){
+  i = Math.max(0, Math.min(slides.length-1, i));
+  slides[cur] && slides[cur].classList.remove('active');
+  cur = i; const s = slides[cur]; s.classList.add('active');
+  $('#num').textContent = (cur+1) + ' / ' + slides.length;
+  $('#ttl').textContent = s.dataset.title || '';
+  $('#prog').style.width = ((cur+1)/slides.length*100) + '%';
+  $$('#menu a').forEach((a,k)=>a.classList.toggle('cur',k===cur));
+  try{ history.replaceState(null,'','#'+(cur+1)); }catch(e){}
+  $$('[data-ggb]', s).forEach(loadGGB);
+  if (s.id && ON[s.id]) { try{ ON[s.id](s); }catch(e){ console.error(e); } }
+  s.scrollTop = 0;
+}
+function buildMenu(){
+  const m = $('#menu'); let last = '';
+  const names = {portada:'Presentación', inicio:'Inicio', desarrollo:'Desarrollo', cierre:'Cierre'};
+  slides.forEach((s,k)=>{
+    const mo = s.dataset.moment || '';
+    if (mo !== last){ const d=document.createElement('div'); d.className='m'; d.textContent=names[mo]||mo; m.appendChild(d); last = mo; }
+    const a = document.createElement('a'); a.href = '#'+(k+1); a.textContent = (k+1)+'. '+(s.dataset.title||'');
+    a.onclick = e => { e.preventDefault(); show(k); m.classList.remove('open'); };
+    m.appendChild(a);
+  });
+}
+/* ---- botones "mostrar" ---- */
+document.addEventListener('click', e=>{
+  const b = e.target.closest('[data-show]');
+  if (b){ const t = document.getElementById(b.dataset.show); if(t){ t.classList.toggle('hide'); b.classList.toggle('solid'); } }
+  const tm = e.target.closest('.timer'); if (tm) toggleTimer(tm);
+});
+/* ---- temporizador ---- */
+function toggleTimer(el){
+  if (el._iv){ clearInterval(el._iv); el._iv=null; el.classList.remove('run'); return; }
+  if (el._left === undefined || el._left <= 0) el._left = +el.dataset.sec;
+  el.classList.add('run');
+  const draw = ()=>{ const m=Math.floor(el._left/60), s=el._left%60; el.querySelector('span').textContent = m+':'+String(s).padStart(2,'0'); };
+  draw();
+  el._iv = setInterval(()=>{ el._left--; draw(); if(el._left<=0){ clearInterval(el._iv); el._iv=null; el.classList.remove('run'); beep(); } },1000);
+}
+function beep(){ try{ const c=new (window.AudioContext||window.webkitAudioContext)(); const o=c.createOscillator(); const g=c.createGain();
+  o.connect(g); g.connect(c.destination); o.frequency.value=880; g.gain.value=.15; o.start(); setTimeout(()=>{o.stop(); c.close();},600);}catch(e){} }
+/* ---- GeoGebra ---- */
+let ggbState = 'none'; const ggbQueue = [];
+function loadGGBScript(){
+  if (ggbState !== 'none') return; ggbState = 'loading';
+  const sc = document.createElement('script'); sc.src = 'https://www.geogebra.org/apps/deployggb.js';
+  sc.onload = ()=>{ ggbState='ready'; ggbQueue.splice(0).forEach(injectGGB); };
+  sc.onerror = ()=>{ ggbState='fail'; ggbQueue.splice(0).forEach(failGGB); };
+  document.head.appendChild(sc);
+  setTimeout(()=>{ if(ggbState==='loading'){ ggbState='fail'; ggbQueue.splice(0).forEach(failGGB);} }, 20000);
+}
+function failGGB(el){ el.innerHTML = '<div class="msg">No se pudo cargar GeoGebra.<br>Este applet necesita conexión a internet.<br>Conéctate y recarga la página (F5).</div>'; }
+function loadGGB(el){
+  if (el.dataset.loaded) return; el.dataset.loaded = '1';
+  el.innerHTML = '<div class="msg">Cargando GeoGebra…</div>';
+  if (ggbState === 'ready') injectGGB(el); else if (ggbState === 'fail') failGGB(el); else { ggbQueue.push(el); loadGGBScript(); }
+}
+function injectGGB(el){
+  const id = el.dataset.ggb, def = GGB[id];
+  const box = document.createElement('div'); box.id = 'ggbx_'+id; el.innerHTML=''; el.appendChild(box);
+  const w = Math.max(300, el.clientWidth), h = Math.max(300, el.clientHeight);
+  const p = { appName:'classic', width:w, height:h, perspective:'G', showToolBar:false, showAlgebraInput:false, showMenuBar:false,
+    showResetIcon:false, enableShiftDragZoom:true, enableRightClick:false, enableLabelDrags:false, showZoomButtons:true,
+    language:'es', borderColor:'#ffffff', errorDialogsActive:false, useBrowserForJS:true,
+    appletOnLoad: api => {
+      API[id] = api;
+      api.setAxesVisible(def.axes!==false, def.axes!==false); api.setGridVisible(def.grid!==false);
+      (def.cmds||[]).forEach(c=>{ const ok = api.evalCommand(c); if(!ok) console.warn('GGB cmd falló:', id, c); });
+      if (def.view) api.setCoordSystem(...def.view);
+      if (def.fit){ /* encuadre con escala 1:1 */
+        const [x0,x1,y0,y1] = def.fit, s = Math.max((x1-x0)/w, (y1-y0)/h), cx=(x0+x1)/2, cy=(y0+y1)/2;
+        api.setCoordSystem(cx - s*w/2, cx + s*w/2, cy - s*h/2, cy + s*h/2); }
+      if (def.after) def.after(api);
+      el.dispatchEvent(new CustomEvent('ggbready',{detail:api}));
+    } };
+  const app = new GGBApplet(p, true);
+  if (window.GGB_CODEBASE) app.setHTML5Codebase(window.GGB_CODEBASE);
+  app.inject(box.id);
+}
+function ggbStyle(api, name, o){
+  if (!api.exists(name)) { console.warn('no existe', name); return; }
+  if (o.c) api.setColor(name, ...o.c);
+  if (o.t !== undefined) api.setLineThickness(name, o.t);
+  if (o.f !== undefined) api.setFilling(name, o.f);
+  if (o.ps !== undefined) api.setPointSize(name, o.ps);
+  if (o.lab !== undefined) api.setLabelVisible(name, o.lab);
+  if (o.cap !== undefined){ api.setCaption(name, o.cap); api.setLabelStyle(name, 3); api.setLabelVisible(name, true); }
+  if (o.fix) api.setFixed(name, true, false);
+  if (o.ls !== undefined) api.setLineStyle(name, o.ls);
+  if (o.vis !== undefined) api.setVisible(name, o.vis);
+}
+/* ---- arranque ---- */
+function boot(){
+  slides = $$('.slide'); buildMenu();
+  $('#bPrev').onclick = ()=>show(cur-1); $('#bNext').onclick = ()=>show(cur+1);
+  $('#bMenu').onclick = ()=>$('#menu').classList.toggle('open');
+  $('#bFull').onclick = full;
+  $('#bTheme').onclick = ()=>{ const r=document.documentElement; const d = r.dataset.theme==='dark' || (!r.dataset.theme && matchMedia('(prefers-color-scheme: dark)').matches);
+    r.dataset.theme = d ? 'light' : 'dark'; };
+  document.addEventListener('keydown', e=>{
+    if (e.target.matches('input,textarea,select')) return;
+    if (['ArrowRight','PageDown',' '].includes(e.key)){ e.preventDefault(); show(cur+1); }
+    else if (['ArrowLeft','PageUp'].includes(e.key)){ e.preventDefault(); show(cur-1); }
+    else if (e.key==='Home') show(0); else if (e.key==='End') show(slides.length-1);
+    else if (e.key==='f'||e.key==='F') full(); else if (e.key==='m'||e.key==='M') $('#menu').classList.toggle('open');
+  });
+  const h = parseInt((location.hash||'').slice(1)); show(isNaN(h)?0:h-1);
+}
+function full(){ if(!document.fullscreenElement) document.documentElement.requestFullscreen().catch(()=>{}); else document.exitFullscreen(); }
+</script>
+<script>
+
+/* ---- controles HTML enlazados a GeoGebra ---- */
+const VAL = {};
+function setOut(key, v){ $$('[data-out="'+key+'"]').forEach(o=>{ const u=o.dataset.unit||''; o.textContent = fmt(+v,2)+u; }); }
+document.addEventListener('input', e=>{
+  const el = e.target;
+  if (el.dataset.bind){ const [a,v]=el.dataset.bind.split(':'); VAL[a]=VAL[a]||{}; VAL[a][v]=+el.value;
+    setOut(el.dataset.bind, el.value); if(API[a]) API[a].setValue(v, +el.value); if(UPD[a]) UPD[a](VAL[a]); }
+  if (el.dataset.bindc){ const [a,v]=el.dataset.bindc.split(':'); VAL[a]=VAL[a]||{}; VAL[a][v]=el.checked?1:0;
+    if(API[a]) API[a].setValue(v, el.checked?1:0); if(UPD[a]) UPD[a](VAL[a]); }
+});
+const UPD = {};
+function initBinds(){
+  $$('[data-bind]').forEach(el=>{ const [a,v]=el.dataset.bind.split(':'); VAL[a]=VAL[a]||{}; VAL[a][v]=+el.value; setOut(el.dataset.bind, el.value); });
+  $$('[data-bindc]').forEach(el=>{ const [a,v]=el.dataset.bindc.split(':'); VAL[a]=VAL[a]||{}; VAL[a][v]=el.checked?1:0; });
+  Object.keys(UPD).forEach(a=>UPD[a](VAL[a]||{}));
+}
+document.addEventListener('ggbready', e=>{
+  const el = e.target, a = el.dataset.ggb, api = e.detail;
+  Object.entries(VAL[a]||{}).forEach(([v,x])=>{ if(api.exists(v)) api.setValue(v,x); });
+}, true);
+document.addEventListener('DOMContentLoaded', initBinds);
+
+function gstats(L0, A, f){
+  const N = f.reduce((a,b)=>a+b,0), x = f.map((_,i)=>L0 + A*i + A/2);
+  const mean = f.reduce((s,fi,i)=>s+fi*x[i],0)/N;
+  let F=0, me=null; for(let i=0;i<f.length;i++){ if(F + f[i] >= N/2){ me = L0 + A*i + (N/2 - F)/f[i]*A; break; } F+=f[i]; }
+  let k = f.indexOf(Math.max(...f)); const d1 = f[k] - (f[k-1]||0), d2 = f[k] - (f[k+1]||0);
+  const mo = L0 + A*k + (d1+d2 ? d1/(d1+d2) : .5)*A;
+  return {N, x, mean, me, mo};
+}
+function drawHist(svg, L0, A, f, marks){
+  const W=560, H=+svg.getAttribute('viewBox').split(' ')[3], pl=46, pb=40, pt=16, pr=14, n=f.length, mx=Math.max(...f)*1.12;
+  const X = v => pl + (v-L0)/(A*n)*(W-pl-pr), Y = v => H-pb - v/mx*(H-pb-pt);
+  let s = `<line x1="${pl}" y1="${H-pb}" x2="${W-pr}" y2="${H-pb}" stroke="currentColor"/>`;
+  f.forEach((fi,i)=>{ s += `<rect x="${X(L0+A*i)}" y="${Y(fi)}" width="${X(L0+A)-X(L0)}" height="${Y(0)-Y(fi)}" fill="#9ec1f0" stroke="#1f5fbf"/>`
+     + `<text x="${X(L0+A*i+A/2)}" y="${Y(fi)-5}" text-anchor="middle" font-size="15" fill="currentColor">${fi}</text>`; });
+  for(let i=0;i<=n;i++) s += `<text x="${X(L0+A*i)}" y="${H-pb+20}" text-anchor="middle" font-size="14" fill="currentColor">${L0+A*i}</text>`;
+  s += `<text x="${(W)/2}" y="${H-4}" text-anchor="middle" font-size="14" fill="currentColor">Ventas diarias (S/)</text>`;
+  (marks||[]).forEach(([v,c,l],j)=>{ s += `<line x1="${X(v)}" x2="${X(v)}" y1="${pt}" y2="${H-pb}" stroke="${c}" stroke-width="3" stroke-dasharray="7 4"/>`
+     + `<text x="${X(v)+5}" y="${pt+16+18*j}" font-size="15" font-weight="700" fill="${c}">${l} = ${fmt(v)}</text>`; });
+  svg.innerHTML = s;
+}
+const F0 = [30,90,50,20,10];
+ON.sMot = () => drawHist($('#hist0'), 20, 20, F0);
+/* ficha técnica interactiva */
+function buildFt(){
+  const t = $('#ft'); if (t.rows.length>1) return; let F=0;
+  F0.forEach((fi,i)=>{ const a=20+20*i; F+=fi; const r=t.insertRow();
+    r.innerHTML = `<td>[${a}; ${a+20}${i===4?']':'⟩'}</td><td>${fi}</td>` + ['x','F','fx'].map(k=>`<td><input type="number" data-k="${k}" data-i="${i}"></td>`).join(''); });
+  const r=t.insertRow(); r.innerHTML='<th>Total</th><th>200</th><th></th><th></th><th><input type="number" data-k="sum"></th>';
+}
+function ftKey(k,i){ const x=30+20*i, F=F0.slice(0,i+1).reduce((a,b)=>a+b,0); return k==='x'?x:k==='F'?F:k==='fx'?F0[i]*x:11800; }
+document.addEventListener('click', e=>{
+  if (e.target.id==='ftChk' || e.target.id==='ftSol'){ let ok=0, tot=0;
+    $$('#ft input').forEach(inp=>{ const v=ftKey(inp.dataset.k,+inp.dataset.i); if(e.target.id==='ftSol') inp.value=v;
+      tot++; const good = +inp.value===v && inp.value!==''; ok+=good; inp.style.borderColor = good?'var(--good)':'var(--bad)'; inp.style.borderWidth='2px'; });
+    $('#ftFb').innerHTML = ok===tot ? '<span class="ok">✓ Tabla correcta: Σ fᵢ·xᵢ = 11 800</span>' : `<span class="no">${tot-ok} casilla(s) por revisar</span>`; }
+  if (e.target.id==='cGo') calc();
+});
+ON.sFt = buildFt;
+/* simulador */
+function sim(){
+  const ex=+$('#extra').value, lo=+$('#low').value; $('#extraV').textContent=ex; $('#lowV').textContent=lo;
+  const f=[lo,90,50,20,10+ex], s=gstats(20,20,f);
+  drawHist($('#hist1'),20,20,f,[[s.mean,'#c2410c','x̄'],[s.me,'#0e8a6a','Me'],[s.mo,'#7c3aed','Mo']]);
+  $('#simOut').innerHTML = `N = ${s.N} días<br>x̄ = <b>S/ ${fmt(s.mean)}</b><br>Me = <b>S/ ${fmt(s.me)}</b><br>Mo = <b>S/ ${fmt(s.mo)}</b>`;
+}
+document.addEventListener('input', e=>{ if(e.target.id==='extra'||e.target.id==='low') sim(); });
+ON.sSim = sim;
+function calc(){
+  const L=+$('#cL').value, A=+$('#cA').value, f=$('#cF').value.split(/[,;\s]+/).filter(Boolean).map(Number);
+  if (!f.length || f.some(isNaN) || !A){ $('#cOut').textContent='Revisa los datos.'; return; }
+  const s=gstats(L,A,f);
+  $('#cOut').innerHTML = `N = ${s.N} · x̄ = <b>${fmt(s.mean)}</b> · Me = <b>${fmt(s.me)}</b> · Mo = <b>${fmt(s.mo)}</b>`;
+  drawHist($('#hist2'),L,A,f,[[s.mean,'#c2410c','x̄'],[s.me,'#0e8a6a','Me'],[s.mo,'#7c3aed','Mo']]);
+}
+ON.sCalc = calc;
+
+</script>
+<script>boot();</script>
+</body>
+</html>
